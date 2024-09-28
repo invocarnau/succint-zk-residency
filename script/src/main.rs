@@ -1,22 +1,12 @@
-use alloy_provider::ReqwestProvider;
 use clap::Parser;
 use reth_primitives::B256;
-use rsp_client_executor::{io::ClientExecutorInput, ChainVariant, CHAIN_ID_ETH_MAINNET};
-use rsp_host_executor::HostExecutor;
-use sp1_sdk::{utils, ProverClient, SP1Stdin};
+use rsp_client_executor::{io::ClientExecutorInput, CHAIN_ID_ETH_MAINNET};
 use std::path::PathBuf;
-mod cli;
-use cli::ProviderArgs;
-use url::Url;
+
+use sp1_sdk::{utils, ProverClient, SP1Stdin};
 
 #[derive(Parser, Debug)]
 struct Args {
-    /// The block number of the block to execute.
-    #[clap(long)]
-    block_number: u64,
-    #[clap(flatten)]
-    provider: ProviderArgs,
-
     /// Whether or not to generate a proof.
     #[arg(long, default_value_t = false)]
     prove: bool,
@@ -30,16 +20,7 @@ fn load_input_from_cache(chain_id: u64, block_number: u64) -> ClientExecutorInpu
     client_input
 }
 
-#[tokio::main]
-async fn main() -> eyre::Result<()> {
-    // Intialize the environment variables.
-    dotenv::dotenv().ok();
-
-    // // Fallback to 'info' level if RUST_LOG is not set
-    // if std::env::var("RUST_LOG").is_err() {
-    //     std::env::set_var("RUST_LOG", "info");
-    // }
-
+fn main() {
     // Initialize the logger.
     utils::setup_logger();
 
@@ -47,41 +28,13 @@ async fn main() -> eyre::Result<()> {
     let args = Args::parse();
 
     // Load the input from the cache.
-    let provider_config = args.provider.into_provider().await?;
-
-    // Setup the provider.
-    // let default_url = url::Url::parse("https://example.com").unwrap();
-    // let url: url::Url = some_option.unwrap_or(default_url);
-    let rpc_url: Url = provider_config.rpc_url.expect("URL must be defined");
-
-    let provider = ReqwestProvider::new_http(rpc_url);
-
-    // Setup the host executor.
-    let host_executor = HostExecutor::new(provider);
-    let variant = match provider_config.chain_id {
-        CHAIN_ID_ETH_MAINNET => ChainVariant::Ethereum,
-        _ => {
-            eyre::bail!("unknown chain ID: {}", provider_config.chain_id);
-        }
-    };
-
-    // println!("ChainID: {:?}", provider_config.chain_id);
-    // println!("Executing block number: {:?}", args.block_number);
-
-    let client_input = host_executor
-        .execute(args.block_number, variant)
-        .await
-        .expect("failed to execute host");
-
-    //let client_input = load_input_from_cache(CHAIN_ID_ETH_MAINNET, 20526624);
+    let client_input = load_input_from_cache(CHAIN_ID_ETH_MAINNET, 20526624);
 
     // Generate the proof.
     let client = ProverClient::new();
 
     // Setup the proving key and verification key.
-    let (pk, vk) = client.setup(include_bytes!(
-        "../../program/elf/riscv32im-succinct-zkvm-elf"
-    ));
+    let (pk, vk) = client.setup(include_bytes!("../../elf/riscv32im-succinct-zkvm-elf"));
 
     // Write the block to the program's stdin.
     let mut stdin = SP1Stdin::new();
@@ -114,5 +67,4 @@ async fn main() -> eyre::Result<()> {
             .verify(&proof, &vk)
             .expect("proof verification should succeed");
     }
-    Ok(())
 }

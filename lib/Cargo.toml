@@ -1,0 +1,10 @@
+[package]
+name = "polccint-lib"
+version = "1.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+rsp-client-executor = { git = "https://github.com/succinctlabs/rsp/", rev = "792efd0" }
+alloy-primitives = "0.7.7"
+serde = { version = "1.0.198", features = ["derive"] }

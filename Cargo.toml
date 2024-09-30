@@ -38,6 +38,7 @@ alloy-provider = { version = "0.3", default-features = false, features = [
     "reqwest-rustls-tls",
 ] }
 alloy-sol-types = { version = "0.8" }
+alloy-primitives = "0.8.0"
 
 # revm
 revm = { version = "=14.0.1", features = [

@@ -1,0 +1,11 @@
+[package]
+name = "block"
+version = "1.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+sp1-zkvm.workspace = true
+bincode.workspace = true
+rsp-client-executor.workspace = true
+polccint-lib = { path = "../../../lib" }

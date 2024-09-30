@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-rsp-client-executor = { git = "https://github.com/succinctlabs/rsp/", rev = "792efd0" }
-sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call/", branch = "main" }
-alloy-primitives = "0.7.7"
-serde = { version = "1.0.198", features = ["derive"] }
+rsp-client-executor.workspace = true
+sp1-cc-client-executor.workspace = true
+alloy-primitives.workspace = true
+serde.workspace = true

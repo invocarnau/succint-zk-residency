@@ -7,39 +7,35 @@ name = "rsp-script"
 edition = "2021"
 
 [dependencies]
-serde_json = "1.0.94"
-serde = { version = "1.0", default-features = false, features = ["derive"] }
-bincode = "1.3.3"
-clap = { version = "4.5.7", features = ["derive", "env"] }
-dotenv = "0.15.0"
 
-eyre = "0.6"
-tokio = { version = "1.21", default-features = false, features = [
-    "rt",
-    "rt-multi-thread",
-] }
-url = "2.3"
+serde_json.workspace = true
+serde.workspace = true
+bincode.workspace = true
+clap.workspace = true
+dotenv.workspace = true
+
+eyre.workspace = true
+tokio.workspace = true
+url.workspace = true
 
 
 # rsp
-rsp-host-executor = { git = "https://github.com/succinctlabs/rsp/", rev = "792efd0" }
-rsp-client-executor = { git = "https://github.com/succinctlabs/rsp/", rev = "792efd0" }
+rsp-host-executor.workspace = true
+rsp-client-executor.workspace = true
 
-reth-primitives = { git = "https://github.com/paradigmxyz/reth" }
+reth-primitives.workspace = true
 
 # sp1
-sp1-sdk = "2.0.0"
+sp1-sdk.workspace = true
 
 
 # alloy
-alloy-provider = { version = "0.2.1", default-features = false, features = [
-    "reqwest",
-    "reqwest-rustls-tls",
-] }
+alloy-provider.workspace = true
 
 
 [build-dependencies]
 sp1-build = "2.0.0"
+
 
 [features]
 default = []

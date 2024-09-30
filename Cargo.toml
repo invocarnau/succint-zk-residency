@@ -20,13 +20,13 @@ tokio = { version = "1.21", default-features = false, features = [
 
 
 # rsp
-rsp-rpc-db = { git = "https://github.com/yuwen01/rsp" , branch = "yuwen/version-hacks"}
-rsp-witness-db = { git = "https://github.com/yuwen01/rsp" , branch = "yuwen/version-hacks"}
-rsp-primitives = { git = "https://github.com/yuwen01/rsp" , branch = "yuwen/version-hacks"}
-rsp-client-executor = { git = "https://github.com/yuwen01/rsp" , branch = "yuwen/version-hacks"}
-rsp-mpt = { git = "https://github.com/yuwen01/rsp" , branch = "yuwen/version-hacks"}
+rsp-rpc-db = { git = "https://github.com/xJonathanLEI/rsp" , branch = "fix/revm_semver"}
+rsp-witness-db = { git = "https://github.com/xJonathanLEI/rsp" , branch = "fix/revm_semver"}
+rsp-primitives = { git = "https://github.com/xJonathanLEI/rsp" , branch = "fix/revm_semver"}
+rsp-client-executor = { git = "https://github.com/xJonathanLEI/rsp" , branch = "fix/revm_semver"}
+rsp-mpt = { git = "https://github.com/xJonathanLEI/rsp" , branch = "fix/revm_semver"}
 
-rsp-host-executor = { git = "https://github.com/yuwen01/rsp", branch = "yuwen/version-hacks" }
+rsp-host-executor = { git = "https://github.com/xJonathanLEI/rsp", branch = "fix/revm_semver" }
 
 # sp1
 sp1-sdk = "2.0.0"

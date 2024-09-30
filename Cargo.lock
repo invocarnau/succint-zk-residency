@@ -5327,7 +5327,7 @@ dependencies = [
 [[package]]
 name = "rsp-client-executor"
 version = "0.1.0"
-source = "git+https://github.com/yuwen01/rsp?branch=yuwen/version-hacks#54bdad273ec65032d0c06b6a046f7059707ff6a3"
+source = "git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver#ab900d040145cb36c2df6aa872c89b0a6e1a2cca"
 dependencies = [
  "alloy-primitives 0.8.5",
  "alloy-rlp",
@@ -5360,7 +5360,7 @@ dependencies = [
 [[package]]
 name = "rsp-host-executor"
 version = "0.1.0"
-source = "git+https://github.com/yuwen01/rsp?branch=yuwen/version-hacks#54bdad273ec65032d0c06b6a046f7059707ff6a3"
+source = "git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver#ab900d040145cb36c2df6aa872c89b0a6e1a2cca"
 dependencies = [
  "alloy-primitives 0.8.5",
  "alloy-provider",
@@ -5394,7 +5394,7 @@ dependencies = [
 [[package]]
 name = "rsp-mpt"
 version = "0.1.0"
-source = "git+https://github.com/yuwen01/rsp?branch=yuwen/version-hacks#54bdad273ec65032d0c06b6a046f7059707ff6a3"
+source = "git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver#ab900d040145cb36c2df6aa872c89b0a6e1a2cca"
 dependencies = [
  "alloy-primitives 0.8.5",
  "alloy-rlp",
@@ -5416,7 +5416,7 @@ dependencies = [
 [[package]]
 name = "rsp-primitives"
 version = "0.1.0"
-source = "git+https://github.com/yuwen01/rsp?branch=yuwen/version-hacks#54bdad273ec65032d0c06b6a046f7059707ff6a3"
+source = "git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver#ab900d040145cb36c2df6aa872c89b0a6e1a2cca"
 dependencies = [
  "alloy-rpc-types",
  "eyre",
@@ -5425,6 +5425,8 @@ dependencies = [
  "reth-primitives",
  "reth-revm",
  "reth-trie",
+ "revm-interpreter",
+ "revm-precompile",
  "revm-primitives",
  "serde",
  "serde_json",
@@ -5443,7 +5445,7 @@ dependencies = [
 [[package]]
 name = "rsp-rpc-db"
 version = "0.1.0"
-source = "git+https://github.com/yuwen01/rsp?branch=yuwen/version-hacks#54bdad273ec65032d0c06b6a046f7059707ff6a3"
+source = "git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver#ab900d040145cb36c2df6aa872c89b0a6e1a2cca"
 dependencies = [
  "alloy-provider",
  "alloy-rlp",
@@ -5485,7 +5487,7 @@ dependencies = [
 [[package]]
 name = "rsp-witness-db"
 version = "0.1.0"
-source = "git+https://github.com/yuwen01/rsp?branch=yuwen/version-hacks#54bdad273ec65032d0c06b6a046f7059707ff6a3"
+source = "git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver#ab900d040145cb36c2df6aa872c89b0a6e1a2cca"
 dependencies = [
  "reth-primitives",
  "reth-storage-errors",

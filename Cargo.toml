@@ -1,9 +1,9 @@
 [workspace]
 members = [
-    # "lib",
+    "lib",
     "fep-type-1/block",
     "fep-type-1/block-aggregation",
-    # "script",
+    "script",
 ]
 resolver = "2"
 

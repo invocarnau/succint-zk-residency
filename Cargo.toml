@@ -6,6 +6,8 @@ members = [
     "fep-type-1/block/client",
     "fep-type-1/block-aggregation/client",
     "fep-type-1/bridge/client",
+    "fep-type-1/uniswap/client",
+    "fep-type-1/uniswap/host",
     # "script",
 ]
 resolver = "2"
@@ -48,7 +50,10 @@ alloy-provider = { version = "0.3", default-features = false, features = [
 alloy-sol-types = { version = "0.8" }
 alloy-primitives = "0.8.0"
 alloy-sol-macro = { version = "0.8" }
-
+alloy = { version = "0.3" }
+alloy-rpc-types = { version = "0.3", default-features = false, features = [
+    "eth",
+] }
 
 # revm
 revm = { version = "=14.0.1", features = [
@@ -67,6 +72,7 @@ reth-primitives = { git = "https://github.com/sp1-patches/reth", tag = "rsp-2024
 
 # sp1-cc
 sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call/", branch = "main" }
+sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call/", branch = "main" }
 
 
 # sha2

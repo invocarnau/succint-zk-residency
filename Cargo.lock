@@ -77,6 +77,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c6cb57a04249c6480766f7f7cef5467412af1490f8d1e243141daddada3264f"
 
 [[package]]
+name = "alloy"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8367891bf380210abb0d6aa30c5f85a9080cb4a066c4d5c5acadad630823751b"
+dependencies = [
+ "alloy-consensus",
+ "alloy-core",
+ "alloy-eips",
+ "alloy-genesis",
+ "alloy-provider",
+ "alloy-rpc-client",
+ "alloy-serde",
+ "alloy-transport-http",
+]
+
+[[package]]
 name = "alloy-chains"
 version = "0.1.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -100,6 +116,36 @@ dependencies = [
  "alloy-serde",
  "c-kzg",
  "serde",
+]
+
+[[package]]
+name = "alloy-core"
+version = "0.8.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ce854562e7cafd5049189d0268d6e5cba05fe6c9cb7c6f8126a79b94800629c"
+dependencies = [
+ "alloy-dyn-abi",
+ "alloy-json-abi",
+ "alloy-primitives 0.8.5",
+ "alloy-rlp",
+ "alloy-sol-types 0.8.5",
+]
+
+[[package]]
+name = "alloy-dyn-abi"
+version = "0.8.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b499852e1d0e9b8c6db0f24c48998e647c0d5762a01090f955106a7700e4611"
+dependencies = [
+ "alloy-json-abi",
+ "alloy-primitives 0.8.5",
+ "alloy-sol-type-parser",
+ "alloy-sol-types 0.8.5",
+ "const-hex",
+ "itoa",
+ "serde",
+ "serde_json",
+ "winnow 0.6.20",
 ]
 
 [[package]]
@@ -5459,7 +5505,7 @@ dependencies = [
  "rsp-client-executor 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
  "rsp-mpt 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
  "rsp-primitives 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "rsp-rpc-db",
+ "rsp-rpc-db 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
  "rsp-witness-db 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
  "serde",
  "serde_json",
@@ -5567,6 +5613,28 @@ dependencies = [
  "reth-trie",
  "revm-primitives",
  "rsp-primitives 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "rsp-rpc-db"
+version = "0.1.0"
+source = "git+https://github.com/succinctlabs/rsp?rev=9f4b54f#9f4b54f66929d3b25b334b7d3f1ea63e34519ba8"
+dependencies = [
+ "alloy-provider",
+ "alloy-rlp",
+ "alloy-rpc-types",
+ "alloy-transport",
+ "futures",
+ "rayon",
+ "reth-primitives",
+ "reth-revm",
+ "reth-storage-errors",
+ "reth-trie",
+ "revm-primitives",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?rev=9f4b54f)",
  "thiserror",
  "tokio",
  "tracing",
@@ -6235,6 +6303,41 @@ dependencies = [
  "serde",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "sp1-cc-host-executor"
+version = "0.1.0"
+source = "git+https://github.com/succinctlabs/sp1-contract-call/?branch=main#1f2a7464a55d7297c083a9ef416077123175d550"
+dependencies = [
+ "alloy-primitives 0.8.5",
+ "alloy-provider",
+ "alloy-rlp",
+ "alloy-rpc-types",
+ "alloy-sol-macro 0.8.5",
+ "alloy-sol-types 0.8.5",
+ "alloy-transport",
+ "eyre",
+ "reth-chainspec",
+ "reth-codecs",
+ "reth-errors",
+ "reth-execution-types",
+ "reth-primitives",
+ "reth-storage-errors",
+ "reth-trie",
+ "revm",
+ "revm-primitives",
+ "rsp-client-executor 0.1.0 (git+https://github.com/succinctlabs/rsp?rev=9f4b54f)",
+ "rsp-mpt 0.1.0 (git+https://github.com/succinctlabs/rsp?rev=9f4b54f)",
+ "rsp-primitives 0.1.0 (git+https://github.com/succinctlabs/rsp?rev=9f4b54f)",
+ "rsp-rpc-db 0.1.0 (git+https://github.com/succinctlabs/rsp?rev=9f4b54f)",
+ "rsp-witness-db 0.1.0 (git+https://github.com/succinctlabs/rsp?rev=9f4b54f)",
+ "serde",
+ "serde_json",
+ "sp1-cc-client-executor",
+ "tokio",
+ "tracing",
+ "url",
 ]
 
 [[package]]
@@ -7489,6 +7592,44 @@ name = "unicode-xid"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
+
+[[package]]
+name = "uniswap"
+version = "1.1.0"
+dependencies = [
+ "alloy",
+ "alloy-primitives 0.8.5",
+ "alloy-provider",
+ "alloy-rpc-types",
+ "alloy-sol-macro 0.8.5",
+ "alloy-sol-types 0.8.5",
+ "bincode",
+ "dotenv",
+ "eyre",
+ "revm",
+ "rsp-rpc-db 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
+ "serde",
+ "serde_json",
+ "sp1-build",
+ "sp1-cc-client-executor",
+ "sp1-cc-host-executor",
+ "sp1-sdk",
+ "tokio",
+ "url",
+]
+
+[[package]]
+name = "uniswap-client"
+version = "0.0.0"
+dependencies = [
+ "alloy-primitives 0.8.5",
+ "alloy-sol-macro 0.8.5",
+ "alloy-sol-types 0.8.5",
+ "bincode",
+ "revm",
+ "sp1-cc-client-executor",
+ "sp1-zkvm",
+]
 
 [[package]]
 name = "untrusted"

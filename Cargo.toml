@@ -4,7 +4,8 @@ members = [
     "fep-type-1/simpleBlock/host",
     "fep-type-1/simpleBlock/client",
     "fep-type-1/block/client",
-    #"fep-type-1/block-aggregation/client",
+    "fep-type-1/block-aggregation/client",
+    "fep-type-1/bridge/client",
     # "script",
 ]
 resolver = "2"
@@ -36,7 +37,7 @@ rsp-host-executor = { git = "https://github.com/xJonathanLEI/rsp", branch = "fix
 
 # sp1
 sp1-sdk = "2.0.0"
-sp1-zkvm = "2.0.0"
+sp1-zkvm = {version = "2.0.0", features = ["verify"]}
 
 
 # alloy

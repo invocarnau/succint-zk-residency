@@ -1,0 +1,45 @@
+[package]
+name = "uniswap"
+version = "1.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+# workspace
+sp1-cc-host-executor.workspace = true
+sp1-cc-client-executor.workspace = true
+
+alloy-primitives.workspace = true
+alloy-sol-types.workspace = true
+alloy-rpc-types.workspace = true
+alloy-sol-macro.workspace = true
+alloy-provider.workspace = true
+# Alloy host dependencies
+alloy.workspace = true
+
+# EVM
+revm.workspace = true
+
+# RSP
+rsp-rpc-db.workspace = true
+
+# misc:
+url.workspace = true
+tokio.workspace = true
+eyre.workspace = true
+bincode.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+dotenv.workspace = true
+
+# sp1
+sp1-sdk.workspace = true
+
+
+[build-dependencies]
+sp1-build = "2.0.0"
+
+[features]
+default = []
+cuda = ["sp1-sdk/cuda"]
+

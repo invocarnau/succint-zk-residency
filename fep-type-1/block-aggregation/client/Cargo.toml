@@ -6,17 +6,8 @@ publish = false
 
 [dependencies]
 bincode.workspace = true
-hex.workspace = true
 sp1-zkvm.workspace = true
 polccint-lib = { path = "../../../lib" }
-sp1-cc-client-executor.workspace = true
-alloy-primitives.workspace = true
-alloy-sol-types.workspace = true
-alloy-sol-macro.workspace = true
-
-# EVM
-revm.workspace = true
-
 sha2.workspace = true
 
 [patch.crates-io]

@@ -1095,6 +1095,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "block-aggregation-program"
+version = "1.1.0"
+dependencies = [
+ "bincode",
+ "polccint-lib",
+ "sha2",
+ "sp1-zkvm",
+]
+
+[[package]]
 name = "block-buffer"
 version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1126,6 +1136,20 @@ dependencies = [
  "glob",
  "threadpool",
  "zeroize",
+]
+
+[[package]]
+name = "bridge-program"
+version = "1.1.0"
+dependencies = [
+ "alloy-primitives 0.8.5",
+ "alloy-sol-macro 0.8.5",
+ "alloy-sol-types 0.8.5",
+ "bincode",
+ "polccint-lib",
+ "revm",
+ "sp1-cc-client-executor",
+ "sp1-zkvm",
 ]
 
 [[package]]
@@ -6748,10 +6772,13 @@ dependencies = [
  "lazy_static",
  "libm",
  "once_cell",
+ "p3-baby-bear",
+ "p3-field",
  "rand",
  "serde",
  "sha2",
  "sp1-lib 2.0.0",
+ "sp1-primitives",
 ]
 
 [[package]]

@@ -24,10 +24,6 @@ pub fn main() {
 
     // Verify bridge:
     // 1. Get the the last GER of the previous block on L2
-    assert_eq!(
-        input.get_last_injected_ger_l2_prev_block_call.header.hash_slow(),
-        input.prev_l2_block_hash
-    );
     let executor = ClientExecutor::new(
         input.get_last_injected_ger_l2_prev_block_call
     ).unwrap();
@@ -45,12 +41,12 @@ pub fn main() {
     if !input.injected_gers.is_empty() {
         assert_eq!(initial_ger, input.injected_gers[0]);
     }
+    assert_eq!(
+        get_last_injected_ger_l2_prev_block_output.blockHash,
+        input.prev_l2_block_hash
+    );
 
     // 2. Check that the GERs are consecutive on L2 at the new block
-    assert_eq!(
-        input.check_gers_are_consecutive_and_return_last_ler_call_l2_new_block_call.header.hash_slow(),
-        input.new_l2_block_hash
-    );
     let executor: ClientExecutor = ClientExecutor::new(
         input.check_gers_are_consecutive_and_return_last_ler_call_l2_new_block_call
     ).unwrap();
@@ -67,9 +63,12 @@ pub fn main() {
     ).unwrap();
     assert_eq!(call_result._0, true);
     assert_eq!(call_result._1, input.new_ler);
+    assert_eq!(
+        check_gers_are_consecutive_and_return_last_ler_call_l2_new_block_output.blockHash,
+        input.new_l2_block_hash
+    );
 
     // 3. Check that the GERs exist on L1
-    assert_eq!(input.check_gers_existance_l1_call.header.hash_slow(), input.l1_block_hash);
     let executor: ClientExecutor = ClientExecutor::new(
         input.check_gers_existance_l1_call
     ).unwrap();
@@ -83,6 +82,7 @@ pub fn main() {
         &check_gers_existance_l1_output.contractOutput, true
     ).unwrap()._0;
     assert_eq!(gers_exist, true);
+    assert_eq!(check_gers_existance_l1_output.blockHash, input.l1_block_hash);
 
     // Commit the bridge proof.
     let bridge_commit = BridgeCommit {

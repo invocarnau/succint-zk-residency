@@ -80,7 +80,7 @@ async fn main() -> eyre::Result<()> {
 
     // Setup the proving key and verification key.
     let (pk, vk) = client.setup(include_bytes!(
-        "../../client/elf/riscv32im-succinct-zkvm-elf"
+        "../../../../elf/riscv32im-succinct-zkvm-elf"
     ));
 
     // Write the block to the program's stdin.

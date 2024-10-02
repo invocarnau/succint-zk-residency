@@ -30,17 +30,13 @@ pub struct BlockAggregationCommit {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BridgeInput {
-    pub l1_block_hash: B256,
-    pub prev_l2_block_hash: B256,
-    pub new_l2_block_hash: B256,
-    pub new_ler: B256,
-    pub l1_ger_addr: Address,
-    pub l2_ger_addr: Address,
+    pub l1_ger_addr: Address, // this could be constant
+    pub l2_ger_addr: Address, // this could be retrieve fro the Bridge L1 which is constant
 
     pub injected_gers: Vec<B256>,
-    pub get_last_injected_ger_l2_prev_block_call: EVMStateSketch,
-    pub check_gers_are_consecutive_and_return_last_ler_call_l2_new_block_call: EVMStateSketch,
-    pub check_gers_existance_l1_call: EVMStateSketch,
+    pub injected_ger_count_sketch: EVMStateSketch,
+    pub check_injected_gers_and_return_ler_sketch: EVMStateSketch,
+    pub check_gers_existance_sketch: EVMStateSketch,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -52,3 +48,5 @@ pub struct BridgeCommit {
     pub l1_ger_addr: Address,
     pub l2_ger_addr: Address,
 }
+
+pub mod constants;

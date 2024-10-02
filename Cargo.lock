@@ -1131,6 +1131,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "block-aggregation-host"
+version = "0.1.0"
+dependencies = [
+ "alloy-provider",
+ "bincode",
+ "clap",
+ "dotenv",
+ "eyre",
+ "polccint-lib",
+ "reth-primitives",
+ "rsp-client-executor 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
+ "rsp-host-executor",
+ "serde",
+ "serde_json",
+ "sp1-build",
+ "sp1-sdk",
+ "tokio",
+ "url",
+]
+
+[[package]]
 name = "block-aggregation-program"
 version = "1.1.0"
 dependencies = [

@@ -1,14 +1,11 @@
 [workspace]
 members = [
     "lib",
-    "fep-type-1/simpleBlock/host",
-    "fep-type-1/simpleBlock/client",
     "fep-type-1/block/client",
+    "fep-type-1/block/host",
     "fep-type-1/block-aggregation/client",
     "fep-type-1/bridge/client",
     "fep-type-1/bridge/host",
-    "fep-type-1/uniswap/client",
-    "fep-type-1/uniswap/host",
     # "script",
 ]
 resolver = "2"

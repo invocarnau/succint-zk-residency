@@ -8,6 +8,7 @@ use std::path::PathBuf;
 mod cli;
 use cli::ProviderArgs;
 use url::Url;
+use polccint_lib::BlockCommit;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -22,13 +23,9 @@ struct Args {
     prove: bool,
 }
 
-fn load_input_from_cache(chain_id: u64, block_number: u64) -> ClientExecutorInput {
-    let cache_path = PathBuf::from(format!("./input/{}/{}.bin", chain_id, block_number));
-    let mut cache_file = std::fs::File::open(cache_path).unwrap();
-    let client_input: ClientExecutorInput = bincode::deserialize_from(&mut cache_file).unwrap();
 
-    client_input
-}
+const ELF: &[u8] = include_bytes!("../../../../elf/block");
+
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -79,9 +76,7 @@ async fn main() -> eyre::Result<()> {
     let client = ProverClient::new();
 
     // Setup the proving key and verification key.
-    let (pk, vk) = client.setup(include_bytes!(
-        "../../../../elf/riscv32im-succinct-zkvm-elf"
-    ));
+    let (pk, vk) = client.setup(ELF);
 
     // Write the block to the program's stdin.
     let mut stdin = SP1Stdin::new();
@@ -96,9 +91,12 @@ async fn main() -> eyre::Result<()> {
         execution_report.total_instruction_count()
     );
 
-    // Read the block hash.
-    let block_hash = public_values.read::<B256>();
-    println!("success: block_hash={block_hash}");
+    let decoded_public_values = public_values.read::<BlockCommit>();
+
+    // Assert outputs
+    // Check that the check was successful
+    assert_eq!(decoded_public_values.prev_block_hash, client_input.parent_header().hash_slow());
+    assert_eq!(decoded_public_values.new_block_hash, client_input.current_block.hash_slow());
 
     // If the `prove` argument was passed in, actually generate the proof.
     // It is strongly recommended you use the network prover given the size of these programs.

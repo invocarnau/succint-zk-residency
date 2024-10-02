@@ -1131,16 +1131,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "block"
-version = "1.1.0"
-dependencies = [
- "bincode",
- "polccint-lib",
- "rsp-client-executor 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "sp1-zkvm",
-]
-
-[[package]]
 name = "block-aggregation-program"
 version = "1.1.0"
 dependencies = [
@@ -1157,6 +1147,37 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
 dependencies = [
  "generic-array 0.14.7",
+]
+
+[[package]]
+name = "block-client"
+version = "0.1.0"
+dependencies = [
+ "alloy-provider",
+ "bincode",
+ "clap",
+ "dotenv",
+ "eyre",
+ "polccint-lib",
+ "reth-primitives",
+ "rsp-client-executor 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
+ "rsp-host-executor",
+ "serde",
+ "serde_json",
+ "sp1-build",
+ "sp1-sdk",
+ "tokio",
+ "url",
+]
+
+[[package]]
+name = "block-host"
+version = "1.1.0"
+dependencies = [
+ "bincode",
+ "polccint-lib",
+ "rsp-client-executor 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
+ "sp1-zkvm",
 ]
 
 [[package]]
@@ -5670,26 +5691,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rsp-script"
-version = "0.1.0"
-dependencies = [
- "alloy-provider",
- "bincode",
- "clap",
- "dotenv",
- "eyre",
- "reth-primitives",
- "rsp-client-executor 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "rsp-host-executor",
- "serde",
- "serde_json",
- "sp1-build",
- "sp1-sdk",
- "tokio",
- "url",
-]
-
-[[package]]
 name = "rsp-witness-db"
 version = "0.1.0"
 source = "git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver#ab900d040145cb36c2df6aa872c89b0a6e1a2cca"
@@ -6225,15 +6226,6 @@ checksum = "77549399552de45a898a580c1b41d445bf730df867cc44e6c0233bbc4b8329de"
 dependencies = [
  "digest 0.10.7",
  "rand_core",
-]
-
-[[package]]
-name = "simple-block"
-version = "1.1.0"
-dependencies = [
- "bincode",
- "rsp-client-executor 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "sp1-zkvm",
 ]
 
 [[package]]
@@ -7621,44 +7613,6 @@ name = "unicode-xid"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
-
-[[package]]
-name = "uniswap"
-version = "1.1.0"
-dependencies = [
- "alloy",
- "alloy-primitives 0.8.5",
- "alloy-provider",
- "alloy-rpc-types",
- "alloy-sol-macro 0.8.5",
- "alloy-sol-types 0.8.5",
- "bincode",
- "dotenv",
- "eyre",
- "revm",
- "rsp-rpc-db 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "serde",
- "serde_json",
- "sp1-build",
- "sp1-cc-client-executor",
- "sp1-cc-host-executor",
- "sp1-sdk",
- "tokio",
- "url",
-]
-
-[[package]]
-name = "uniswap-client"
-version = "0.0.0"
-dependencies = [
- "alloy-primitives 0.8.5",
- "alloy-sol-macro 0.8.5",
- "alloy-sol-types 0.8.5",
- "bincode",
- "revm",
- "sp1-cc-client-executor",
- "sp1-zkvm",
-]
 
 [[package]]
 name = "untrusted"

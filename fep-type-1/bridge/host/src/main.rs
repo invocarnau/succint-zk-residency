@@ -94,7 +94,6 @@ async fn main() -> eyre::Result<()> {
         )
     ];
     
-
     // Load the input from the cache.
     // TODO return differnet providers
     let provider_config = args.provider.into_provider().await?;
@@ -169,7 +168,7 @@ async fn main() -> eyre::Result<()> {
      let bridge_input: BridgeInput = BridgeInput {
         l1_ger_addr: CONTRACT_GER_L1,
         l2_ger_addr: CONTRACT_GER_L2,
-        injected_gers: Vec::new(),
+        injected_gers: imported_gers,
         injected_ger_count_sketch: executor_injected_ger_count_sketch.clone(),
         check_injected_gers_and_return_ler_sketch: executor_check_injected_gers_and_return_ler_sketch.clone(),
         check_gers_existance_sketch: executor_check_injected_gers_existance.clone(),

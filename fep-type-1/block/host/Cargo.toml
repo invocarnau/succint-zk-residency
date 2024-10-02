@@ -3,11 +3,12 @@
 # declaring an empty workspace.
 [package]
 version = "0.1.0"
-name = "rsp-script"
+name = "block-client"
 edition = "2021"
 
 [dependencies]
-
+# workspace
+polccint-lib = { path = "../../../lib" }
 serde_json.workspace = true
 serde.workspace = true
 bincode.workspace = true

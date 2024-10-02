@@ -33,6 +33,7 @@ pub fn main() {
     let block_aggregation_commit = BlockAggregationCommit {
         prev_l2_block_hash: input.block_commits[0].prev_block_hash,
         new_l2_block_hash: input.block_commits.last().unwrap().new_block_hash,
+        block_vkey: input.block_vkey,
     };
     sp1_zkvm::io::commit(&block_aggregation_commit);
 }

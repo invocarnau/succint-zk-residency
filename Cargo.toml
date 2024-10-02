@@ -5,6 +5,8 @@ members = [
     "fep-type-1/block/host",
     "fep-type-1/block-aggregation/client",
     "fep-type-1/block-aggregation/host",
+    "fep-type-1/aggregation-final/client",
+    "fep-type-1/aggregation-final/host",
     "fep-type-1/bridge/client",
     "fep-type-1/bridge/host",
     # "script",

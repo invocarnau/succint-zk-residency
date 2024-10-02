@@ -1,5 +1,4 @@
 use alloy_primitives::{B256, Address};
-use rsp_client_executor::io::ClientExecutorInput;
 use sp1_cc_client_executor::io::EVMStateSketch;
 use serde::{Deserialize, Serialize};
 
@@ -19,6 +18,7 @@ pub struct BlockAggregationInput {
 pub struct BlockAggregationCommit {
     pub prev_l2_block_hash: B256,
     pub new_l2_block_hash: B256,
+    pub block_vkey: [u32; 8], 
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -40,6 +40,14 @@ pub struct BridgeCommit {
     pub new_ler: B256,
     pub l1_ger_addr: Address,
     pub l2_ger_addr: Address,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FinalAggregationInput {
+    pub block_vkey_aggregation: [u32; 8], 
+    pub block_aggregation_commit: BlockAggregationCommit,
+    pub block_vkey_bridge: [u32; 8], 
+    pub bridge_commit: BridgeCommit,
 }
 
 pub mod constants;

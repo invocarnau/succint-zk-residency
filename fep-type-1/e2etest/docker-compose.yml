@@ -1,0 +1,67 @@
+networks:
+  default:
+    name: test-fep-type1
+    
+services:
+  test-fep-type1-cdk:
+    container_name: arnaubennassar/cdk:8167397
+    restart: no
+    image: cdk
+    volumes:
+      - ./config/cdk.toml:/app/config.toml
+      # - ./config/genesis.json:/app/genesis.json
+      - ./config/aggoracle.keystore:/app/keystore/aggoracle.keystore
+      - ./config/claimsponsor.keystore:/app/keystore/claimsponsor.keystore
+    ports:
+      - 5576:5576
+    command:
+      - "/bin/sh"
+      - "-c"
+      - "/app/cdk run --cfg /app/config.toml --custom-network-file /app/genesis.json --components aggoracle,rpc"
+    depends_on:
+      - test-fep-type1-l1
+      - test-fep-type1-l2
+
+  test-fep-type1-l1:
+    container_name: test-fep-type1-l1
+    image: hermeznetwork/geth-zkevm-contracts:elderberry-fork.9-geth1.13.11
+    environment:
+      - DEV_PERIOD
+    ports:
+      - "8545:8545"
+    entrypoint:
+      - geth
+      - --http
+      - --http.addr
+      - "0.0.0.0"
+      - "--http.corsdomain"
+      - "*"
+      - "--http.vhosts"
+      - "*"
+      - --dev
+      - --dev.period
+      - "1"
+      - "--datadir"
+      - "/geth_data"
+
+  test-fep-type1-l2:
+    container_name: test-fep-type1-l2
+    image: hermeznetwork/geth-zkevm-contracts:elderberry-fork.9-geth1.13.11
+    environment:
+      - DEV_PERIOD
+    ports:
+      - "8555:8545"
+    entrypoint:
+      - geth
+      - --http
+      - --http.addr
+      - "0.0.0.0"
+      - "--http.corsdomain"
+      - "*"
+      - "--http.vhosts"
+      - "*"
+      - --dev
+      - --dev.period
+      - "1"
+      - "--datadir"
+      - "/geth_data"

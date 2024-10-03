@@ -6,7 +6,7 @@ services:
   test-fep-type1-cdk:
     container_name: test-fep-type1-cdk
     restart: no
-    image: arnaubennassar/cdk:7cee4f5
+    image: arnaubennassar/cdk:19e02a2
     platform: linux/amd64
     volumes:
       - ./config/cdk.toml:/app/config.toml

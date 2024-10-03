@@ -32,9 +32,10 @@ import (
 const (
 	l1ChainID       = 1337
 	l2ChainID       = 42069
+	l2NetworkID     = uint32(1)
 	l1URL           = "http://localhost:8545"
 	l2URL           = "http://localhost:8555"
-	alreadyDeployed = true
+	alreadyDeployed = false
 )
 
 var (
@@ -48,13 +49,14 @@ func TestBridgeEVM(t *testing.T) {
 	fmt.Println("running L1 network (turning up docker container)...")
 	clientL1, _, gerL1, _, bridgeL1 := runL1(t)
 	fmt.Println("running L2 network (turning up docker container + deploy contracts)...")
-	gerAddrL2, _, bridgeAddrL2, bridgeL2 := runL2(t, authL2)
+	clientL2, gerAddrL2, _, bridgeAddrL2, bridgeL2 := runL2(t, authL2)
 	if !alreadyDeployed {
 		fmt.Println("running CDK client for L2 (turning up docker container)...")
+		time.Sleep(time.Second * 2)
 		editConfig(t, gerAddrL2, bridgeAddrL2)
 		runCDK(t)
 	}
-	runBridgeL1toL2Test(t, clientL1, authL1, authL2, gerL1, bridgeL1, bridgeL2)
+	runBridgeL1toL2Test(t, clientL1, clientL2, authL1, authL2, gerL1, bridgeL1, bridgeL2)
 }
 
 func loadAuth(t *testing.T) (*bind.TransactOpts, *bind.TransactOpts) {
@@ -78,7 +80,7 @@ func runL1(t *testing.T) (
 ) {
 	gerAddr := common.HexToAddress("0x8A791620dd6260079BF849Dc5567aDC3F2FdC318")
 	bridgeAddr := common.HexToAddress(("0xFe12ABaa190Ef0c8638Ee0ba9F828BF41368Ca0E"))
-	if alreadyDeployed {
+	if !alreadyDeployed {
 		msg, err := exec.Command("bash", "-l", "-c", "docker compose up -d test-fep-type1-l1").CombinedOutput()
 		require.NoError(t, err, string(msg))
 		time.Sleep(time.Second * 2)
@@ -93,6 +95,7 @@ func runL1(t *testing.T) (
 }
 
 func runL2(t *testing.T, auth *bind.TransactOpts) (
+	*ethclient.Client,
 	common.Address,
 	*gerl2.Gerl2,
 	common.Address,
@@ -199,13 +202,13 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 		fmt.Println("gerAddr ", gerAddr)
 		fmt.Println("bridgeAddr ", bridgeAddr)
 
-		return gerAddr, gerContract, bridgeAddr, bridgeContract
+		return client, gerAddr, gerContract, bridgeAddr, bridgeContract
 	} else {
 		gerContract, err := gerl2.NewGerl2(gerAddrL2AlreadyDeployed, client)
 		require.NoError(t, err)
 		bridgeContract, err := polygonzkevmbridgev2.NewPolygonzkevmbridgev2(bridgeAddrL2AlreadyDeployed, client)
 		require.NoError(t, err)
-		return gerAddrL2AlreadyDeployed, gerContract, bridgeAddrL2AlreadyDeployed, bridgeContract
+		return client, gerAddrL2AlreadyDeployed, gerContract, bridgeAddrL2AlreadyDeployed, bridgeContract
 	}
 }
 
@@ -228,13 +231,13 @@ func runCDK(t *testing.T) {
 func runBridgeL1toL2Test(
 	t *testing.T,
 	clientL1 *ethclient.Client,
+	clientL2 *ethclient.Client,
 	authL1 *bind.TransactOpts,
 	authL2 *bind.TransactOpts,
 	gerL1Contract *gerContractL1.Polygonzkevmglobalexitrootv2,
 	bridgeL1 *polygonzkevmbridgev2.Polygonzkevmbridgev2,
 	bridgeL2 *polygonzkevmbridgev2.Polygonzkevmbridgev2,
 ) {
-	l2NetworkID := uint32(1)
 	bridgeClient := cdkClient.NewClient("http://localhost:5576")
 	for i := 0; i < 1000; i++ {
 		// Send bridge L1 -> L2
@@ -242,7 +245,7 @@ func runBridgeL1toL2Test(
 		fmt.Println("sending bridge tx to L1")
 		amount := big.NewInt(int64(i + 1))
 		authL1.Value = amount
-		claim := claimsponsor.Claim{
+		claimL1toL2 := claimsponsor.Claim{
 			LeafType:           0,
 			OriginNetwork:      0,
 			OriginTokenAddress: common.Address{},
@@ -253,13 +256,13 @@ func runBridgeL1toL2Test(
 		}
 		gerBefore, err := gerL1Contract.GetLastGlobalExitRoot(nil)
 		require.NoError(t, err)
-		tx, err := bridgeL1.BridgeAsset(authL1, claim.DestinationNetwork, claim.DestinationAddress, claim.Amount, claim.OriginTokenAddress, true, nil)
+		tx, err := bridgeL1.BridgeAsset(authL1, claimL1toL2.DestinationNetwork, claimL1toL2.DestinationAddress, claimL1toL2.Amount, claimL1toL2.OriginTokenAddress, true, nil)
 		require.NoError(t, err)
 		time.Sleep(time.Second * 2)
 		gerAfter, err := gerL1Contract.GetLastGlobalExitRoot(nil)
 		require.NoError(t, err)
 		require.NotEqual(t, gerBefore, gerAfter)
-		fmt.Println("bridge sent")
+		fmt.Println("bridge tx mined on L1")
 
 		// Interact with bridge service
 		fmt.Println("interacting with bridges service:")
@@ -282,6 +285,8 @@ func runBridgeL1toL2Test(
 		}
 		require.True(t, found)
 		fmt.Println("Bridge includded at L1 Info Tree Index: ", bridgeIncluddedAtIndex)
+
+		fmt.Println("getting info already injected on L2")
 		var info *l1infotreesync.L1InfoTreeLeaf
 		found = false
 		for i := 0; i < 34; i++ {
@@ -298,26 +303,30 @@ func runBridgeL1toL2Test(
 		proof, err := bridgeClient.ClaimProof(0, depositCount, info.L1InfoTreeIndex)
 		require.NoError(t, err)
 		fmt.Printf("ClaimProof received from bridge service\n")
-		claim.ProofLocalExitRoot = proof.ProofLocalExitRoot
-		claim.ProofRollupExitRoot = proof.ProofRollupExitRoot
-		claim.GlobalIndex = bridgesync.GenerateGlobalIndex(true, claim.DestinationNetwork-1, depositCount)
-		claim.MainnetExitRoot = info.MainnetExitRoot
-		claim.RollupExitRoot = info.RollupExitRoot
-		err = bridgeClient.SponsorClaim(claim)
-		require.NoError(t, err)
+
 		fmt.Println("Requesting service to sponsor claim")
+		claimL1toL2.ProofLocalExitRoot = proof.ProofLocalExitRoot
+		claimL1toL2.ProofRollupExitRoot = proof.ProofRollupExitRoot
+		claimL1toL2.GlobalIndex = bridgesync.GenerateGlobalIndex(true, claimL1toL2.DestinationNetwork-1, depositCount)
+		claimL1toL2.MainnetExitRoot = info.MainnetExitRoot
+		claimL1toL2.RollupExitRoot = info.RollupExitRoot
+		err = bridgeClient.SponsorClaim(claimL1toL2)
+		require.NoError(t, err)
 		fmt.Println("waiting for service to send claim on behalf of the user...")
 		found = false
 		for i := 0; i < 20; i++ {
-			status, err := bridgeClient.GetSponsoredClaimStatus(claim.GlobalIndex)
+			time.Sleep(time.Second * 2)
+			status, err := bridgeClient.GetSponsoredClaimStatus(claimL1toL2.GlobalIndex)
 			fmt.Println("sponsored claim status: ", status)
-			require.NoError(t, err)
+			if err != nil {
+				fmt.Println("error getting sponsored claim status: ", err)
+				continue
+			}
 			require.NotEqual(t, claimsponsor.FailedClaimStatus, status)
 			if status == claimsponsor.SuccessClaimStatus {
 				found = true
 				break
 			}
-			time.Sleep(time.Second * 2)
 		}
 		require.True(t, found)
 		fmt.Println("service reports that the claim tx is succesful")
@@ -328,5 +337,60 @@ func runBridgeL1toL2Test(
 		require.NoError(t, err)
 		require.True(t, isClaimed)
 		fmt.Println("birge completed!")
+
+		// bridge back to L1
+		fmt.Println("bridging back to L1...")
+		claimL2toL1 := claimsponsor.Claim{
+			LeafType:           0,
+			OriginNetwork:      0,
+			OriginTokenAddress: common.Address{},
+			DestinationNetwork: 0,
+			DestinationAddress: authL1.From,
+			Amount:             amount,
+			Metadata:           nil,
+		}
+
+		fmt.Println("sending bridge tx  to L2")
+		tx, err = bridgeL1.BridgeAsset(authL2, claimL2toL1.DestinationNetwork, claimL2toL1.DestinationAddress, claimL2toL1.Amount, claimL2toL1.OriginTokenAddress, true, nil)
+		require.NoError(t, err)
+		time.Sleep(time.Second * 2)
+		receipt, err = clientL2.TransactionReceipt(context.TODO(), tx.Hash())
+		require.NoError(t, err)
+		bridgeEvent, err = bridgeL2.ParseBridgeEvent(*receipt.Logs[0])
+		require.NoError(t, err)
+		require.Equal(t, receipt.Status, types.ReceiptStatusSuccessful)
+		depositCount = bridgeEvent.DepositCount
+		fmt.Println("bridge tx mined on L2")
+
+		fmt.Print("wait for bridge to be included on L1 info tree index (needs for the chain to verify the block on L1)")
+		found = false
+		for i := 0; i < 40; i++ { // block needs to be finalised, takes ~32s
+			bridgeIncluddedAtIndex, err = bridgeClient.L1InfoTreeIndexForBridge(l2NetworkID, depositCount)
+			if err == nil {
+				found = true
+				break
+			}
+			fmt.Println("bridge has not been included yet to L1 Info Tree")
+			time.Sleep(time.Second * 2)
+		}
+		require.True(t, found)
+		fmt.Println("Bridge includded at L1 Info Tree Index: ", bridgeIncluddedAtIndex)
+
+		fmt.Println("get claim proof")
+		proof, err = bridgeClient.ClaimProof(l2NetworkID, depositCount, bridgeIncluddedAtIndex)
+		require.NoError(t, err)
+		fmt.Printf("ClaimProof received from bridge service\n")
+
+		fmt.Println("send claim tx")
+		bridgeL1.ClaimAsset(
+			authL1,
+			proof.ProofLocalExitRoot,
+			proof.ProofRollupExitRoot,
+			amount,
+			info.MainnetExitRoot,
+			info.RollupExitRoot,
+			bridgeIncluddedAtIndex,
+			common.Address{}, 0, authL1.From, amount, nil,
+		)
 	}
 }

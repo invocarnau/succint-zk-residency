@@ -4,12 +4,13 @@ networks:
     
 services:
   test-fep-type1-cdk:
-    container_name: arnaubennassar/cdk:8167397
+    container_name: test-fep-type1-cdk
     restart: no
-    image: cdk
+    image: arnaubennassar/cdk:7cee4f5
+    platform: linux/amd64
     volumes:
       - ./config/cdk.toml:/app/config.toml
-      # - ./config/genesis.json:/app/genesis.json
+      # - ./config/l1genesis.json:/app/genesis.json
       - ./config/aggoracle.keystore:/app/keystore/aggoracle.keystore
       - ./config/claimsponsor.keystore:/app/keystore/claimsponsor.keystore
     ports:
@@ -17,7 +18,7 @@ services:
     command:
       - "/bin/sh"
       - "-c"
-      - "/app/cdk run --cfg /app/config.toml --custom-network-file /app/genesis.json --components aggoracle,rpc"
+      - "cdk-node run --cfg /app/config.toml --custom-network-file /app/genesis.json --components aggoracle,rpc"
     depends_on:
       - test-fep-type1-l1
       - test-fep-type1-l2
@@ -46,22 +47,20 @@ services:
 
   test-fep-type1-l2:
     container_name: test-fep-type1-l2
-    image: hermeznetwork/geth-zkevm-contracts:elderberry-fork.9-geth1.13.11
+    image: ethereum/client-go:v1.13.5
     environment:
       - DEV_PERIOD
     ports:
       - "8555:8545"
+    volumes:
+      - ./config:/config
     entrypoint:
-      - geth
-      - --http
-      - --http.addr
-      - "0.0.0.0"
-      - "--http.corsdomain"
-      - "*"
-      - "--http.vhosts"
-      - "*"
-      - --dev
-      - --dev.period
-      - "1"
-      - "--datadir"
-      - "/geth_data"
+      - "/bin/sh"
+      - "-c"
+      - | 
+        rm -rf /tmp/data &&
+        geth --datadir /tmp/data init /config/l2genesis.json && 
+        cp /config/aggoracle.keystore /tmp/data/keystore/UTC--2024-10-02T21-39-30.816069000Z--70997970c51812dc3a010c7d01b50e0d17dc79c8 && 
+        geth --allow-insecure-unlock --http --http.addr 0.0.0.0 --http.corsdomain "*" --http.vhosts "*" --networkid 42069 --unlock 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 --password /config/password --miner.etherbase 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 --miner.gasprice 20000000000 --txpool.pricelimit 20000000000 --mine --datadir /tmp/data
+
+ 

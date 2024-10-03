@@ -7,7 +7,7 @@ IsValidiumMode = false
 ContractVersions = "banana"
 
 [Etherman]
-URL = "http://test-fep-type1-l1:8545"
+URL = "http://localhost:8545"
 
 [Log]
 Environment = "development" # "production" or "development"
@@ -27,29 +27,29 @@ GlobalExitRootAddr="0x8A791620dd6260079BF849Dc5567aDC3F2FdC318"
 RollupManagerAddr="0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e" 
 SyncBlockChunkSize=10
 BlockFinality="LatestBlock"
-URLRPCL1="http://test-fep-type1-l1:8545"
+URLRPCL1="http://localhost:8545"
 WaitForNewBlocksPeriod="100ms"
 InitialBlock=0
 
 [AggOracle]
 TargetChainType="EVM"
-URLRPCL1="http://test-fep-type1-l2:8545"
+URLRPCL1="http://localhost:8555"
 BlockFinality="FinalizedBlock"
-WaitPeriodNextGER="1s"
+WaitPeriodNextGER="30s"
 	[AggOracle.EVMSender]
-		GlobalExitRootL2="0x31f702351C8919B1B21c157c2f7446DF6669e0d1"
-		URLRPCL2="http://test-fep-type1-l2:8545"
+		GlobalExitRootL2="0xDDfbd99a5A73931869b56fd386961d2459fD51AD"
+		URLRPCL2="http://localhost:8555"
 		ChainIDL2=42069
 		GasOffset=0
-		WaitPeriodMonitorTx="1s"
+		WaitPeriodMonitorTx="30s"
 		SenderAddr="0x70997970c51812dc3a010c7d01b50e0d17dc79c8"
 		[AggOracle.EVMSender.EthTxManager]
-				FrequencyToMonitorTxs = "1s"
-				WaitTxToBeMined = "1s"
-				GetReceiptMaxTime = "1s"
-				GetReceiptWaitInterval = "1s"
+				FrequencyToMonitorTxs = "30s"
+				WaitTxToBeMined = "30s"
+				GetReceiptMaxTime = "30s"
+				GetReceiptWaitInterval = "30s"
 				PrivateKeys = [
-					{Path = "/app/keystore/aggoracle.keystore", Password = "testonly"},
+					{Path = "/Users/arnaub/Documents/polygon/succint-zk-residency/fep-type-1/e2etest/config/aggoracle.keystore", Password = "testonly"},
 				]
 				ForcedGas = 0
 				GasPriceMarginFactor = 1
@@ -59,9 +59,9 @@ WaitPeriodNextGER="1s"
 				SafeStatusL1NumberOfBlocks = 5
 				FinalizedStatusL1NumberOfBlocks = 10
 					[AggOracle.EVMSender.EthTxManager.Etherman]
-						URL = "http://test-fep-type1-l2:8545"
+						URL = "http://test-fep-type1-l2"
 						MultiGasProvider = false
-						L1ChainID = 42069
+						L1ChainID = 1337
 						HTTPHeaders = []
 
 [RPC]
@@ -75,7 +75,7 @@ MaxRequestsPerIPAndSecond = 10
 DBPath = "/tmp/claimsopnsor"
 Enabled = true
 SenderAddr = "0x976ea74026e726554db657fa54763abd0c3a0aa9"
-BridgeAddrL2 = "0xf748392805e1AFb567aeAC6d8310F6F649945B4b"
+BridgeAddrL2 = "0xaa6e1951E142F1E10e0f886E1bF3017706f93052"
 MaxGas = 200000
 RetryAfterErrorPeriod = "1s"
 MaxRetryAttemptsAfterError = -1
@@ -88,7 +88,7 @@ GasOffset = 0
 		GetReceiptMaxTime = "250ms"
 		GetReceiptWaitInterval = "1s"
 		PrivateKeys = [
-			{Path = "/app/keystore/claimsponsor.keystore", Password = "testonly"},
+			{Path = "/Users/arnaub/Documents/polygon/succint-zk-residency/fep-type-1/e2etest/config/claimsponsor.keystore", Password = "testonly"},
 		]
 		ForcedGas = 0
 		GasPriceMarginFactor = 1
@@ -98,7 +98,7 @@ GasOffset = 0
 		SafeStatusL1NumberOfBlocks = 5
 		FinalizedStatusL1NumberOfBlocks = 10
 			[ClaimSponsor.EthTxManager.Etherman]
-				URL = "http://test-fep-type1-l2:8545"
+				URL = "http://localhost:8555"
 				MultiGasProvider = false
 				L1ChainID = 1337
 				HTTPHeaders = []
@@ -123,7 +123,7 @@ WaitForNewBlocksPeriod = "3s"
 DBPath = "/tmp/bridgel2sync"
 BlockFinality = "LatestBlock"
 InitialBlockNum = 0
-BridgeAddr = "0xf748392805e1AFb567aeAC6d8310F6F649945B4b"
+BridgeAddr = "0xaa6e1951E142F1E10e0f886E1bF3017706f93052"
 SyncBlockChunkSize = 100
 RetryAfterErrorPeriod = "1s"
 MaxRetryAttemptsAfterError = -1
@@ -133,7 +133,7 @@ WaitForNewBlocksPeriod = "3s"
 DBPath = "/tmp/lastgersync"
 BlockFinality = "LatestBlock"
 InitialBlockNum = 0
-GlobalExitRootL2Addr = "0x31f702351C8919B1B21c157c2f7446DF6669e0d1"
+GlobalExitRootL2Addr = "0xDDfbd99a5A73931869b56fd386961d2459fD51AD"
 RetryAfterErrorPeriod = "1s"
 MaxRetryAttemptsAfterError = -1
 WaitForNewBlocksPeriod = "1s"
@@ -146,7 +146,7 @@ LastBatchVirtualizationTimeMaxWaitPeriod = "1500h"
 L1BlockTimestampMargin = "1500h"
 MaxTxSizeForL1 = 13107200000000
 L2Coinbase = "0xfa3b44587990f97ba8b6ba7e230a5f0e95d14b3d"
-PrivateKey = {Path = "/app/keystore/claimsponsor.keystore", Password = "testonly"}
+PrivateKey = {Path = "/Users/arnaub/Documents/polygon/succint-zk-residency/fep-type-1/e2etest/config/claimsponsor.keystore", Password = "testonly"}
 SequencesTxFileName = "sequencesender.json"
 GasOffset = 80000
 WaitPeriodPurgeTxFile = "1500h"
@@ -161,7 +161,7 @@ GetBatchWaitInterval = "1500h"
 		GetReceiptMaxTime = "1500h"
 		GetReceiptWaitInterval = "11500h"
 		PrivateKeys = [
-			{Path = "/app/keystore/claimsponsor.keystore", Password = "testonly"},
+			{Path = "/Users/arnaub/Documents/polygon/succint-zk-residency/fep-type-1/e2etest/config/claimsponsor.keystore", Password = "testonly"},
 		]
 		ForcedGas = 0
 		GasPriceMarginFactor = 1
@@ -171,7 +171,7 @@ GetBatchWaitInterval = "1500h"
 		SafeStatusL1NumberOfBlocks = 0
 		FinalizedStatusL1NumberOfBlocks = 0
 			[SequenceSender.EthTxManager.Etherman]
-				URL = "http://test-fep-type1-l1:8545"
+				URL = "http://localhost:8545"
 				MultiGasProvider = false
 				L1ChainID = 1337
 

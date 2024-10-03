@@ -13,7 +13,6 @@ import (
 
 	"github.com/0xPolygon/cdk-contracts-tooling/contracts/banana/polygonzkevmbridgev2"
 	gerContractL1 "github.com/0xPolygon/cdk-contracts-tooling/contracts/banana/polygonzkevmglobalexitrootv2"
-	gerContractL2 "github.com/0xPolygon/cdk-contracts-tooling/contracts/manual/pessimisticglobalexitroot"
 	"github.com/0xPolygon/cdk/bridgesync"
 	"github.com/0xPolygon/cdk/claimsponsor"
 	"github.com/0xPolygon/cdk/l1infotreesync"
@@ -25,32 +24,40 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/invocarnau/succint-zk-residency/fep-type-1/e2etest/gerl2"
 	"github.com/invocarnau/succint-zk-residency/fep-type-1/e2etest/transparentupgradableproxy"
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	l1ChainID = 1337
+	l2ChainID = 42069
+)
+
 func TestBridgeEVM(t *testing.T) {
 	// defer exec.Command("bash", "-l", "-c", "docker compose down").Run()
-	auth := loadAuth(t)
+	authL1, authL2 := loadAuth(t)
 	fmt.Println("running L1 network (turning up docker container)...")
 	_, gerL1, _, bridgeL1 := runL1(t)
 	fmt.Println("running L2 network (turning up docker container + deploy contracts)...")
-	gerAddrL2, _, bridgeAddrL2, bridgeL2 := runL2(t, auth)
+	gerAddrL2, _, bridgeAddrL2, bridgeL2 := runL2(t, authL2)
 	fmt.Println("running CDK client for L2 (turning up docker container)...")
 	editConfig(t, gerAddrL2, bridgeAddrL2)
 	runCDK(t)
 
-	runBridgeL1toL2Test(t, auth, auth, gerL1, bridgeL1, bridgeL2)
+	runBridgeL1toL2Test(t, authL1, authL2, gerL1, bridgeL1, bridgeL2)
 }
 
-func loadAuth(t *testing.T) *bind.TransactOpts {
+func loadAuth(t *testing.T) (*bind.TransactOpts, *bind.TransactOpts) {
 	keystoreEncrypted, err := os.ReadFile("./config/aggoracle.keystore")
 	require.NoError(t, err)
 	key, err := keystore.DecryptKey(keystoreEncrypted, "testonly")
 	require.NoError(t, err)
-	auth, err := bind.NewKeyedTransactorWithChainID(key.PrivateKey, new(big.Int).SetUint64(1337))
+	authL1, err := bind.NewKeyedTransactorWithChainID(key.PrivateKey, new(big.Int).SetUint64(l1ChainID))
 	require.NoError(t, err)
-	return auth
+	authL2, err := bind.NewKeyedTransactorWithChainID(key.PrivateKey, new(big.Int).SetUint64(l2ChainID))
+	require.NoError(t, err)
+	return authL1, authL2
 }
 
 func runL1(t *testing.T) (
@@ -61,9 +68,9 @@ func runL1(t *testing.T) (
 ) {
 	gerAddr := common.HexToAddress("0x8A791620dd6260079BF849Dc5567aDC3F2FdC318")
 	bridgeAddr := common.HexToAddress(("0xFe12ABaa190Ef0c8638Ee0ba9F828BF41368Ca0E"))
-	msg, err := exec.Command("bash", "-l", "-c", "docker compose up -d test-aggoracle-l1").CombinedOutput()
+	msg, err := exec.Command("bash", "-l", "-c", "docker compose up -d test-fep-type1-l1").CombinedOutput()
 	require.NoError(t, err, string(msg))
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 2)
 	client, err := ethclient.Dial("http://localhost:8545")
 	require.NoError(t, err)
 	gerContract, err := gerContractL1.NewPolygonzkevmglobalexitrootv2(gerAddr, client)
@@ -75,22 +82,22 @@ func runL1(t *testing.T) (
 
 func runL2(t *testing.T, auth *bind.TransactOpts) (
 	common.Address,
-	*gerContractL2.Pessimisticglobalexitroot,
+	*gerl2.Gerl2,
 	common.Address,
 	*polygonzkevmbridgev2.Polygonzkevmbridgev2,
 ) {
-	msg, err := exec.Command("bash", "-l", "-c", "docker compose up -d test-aggoracle-l2").CombinedOutput()
+	msg, err := exec.Command("bash", "-l", "-c", "docker compose up -d test-fep-type1-l2").CombinedOutput()
 	require.NoError(t, err, string(msg))
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 2)
 	require.NoError(t, err)
 	client, err := ethclient.Dial("http://localhost:8555")
 	require.NoError(t, err)
 
 	// create tmp auth to deploy contracts
 	ctx := context.Background()
-	privateKeyL1, err := crypto.GenerateKey()
+	privateKeyL2, err := crypto.GenerateKey()
 	require.NoError(t, err)
-	authDeployer, err := bind.NewKeyedTransactorWithChainID(privateKeyL1, big.NewInt(1337))
+	authDeployer, err := bind.NewKeyedTransactorWithChainID(privateKeyL2, big.NewInt(l2ChainID))
 	require.NoError(t, err)
 
 	// fund deployer
@@ -106,7 +113,7 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 	require.NoError(t, err)
 	err = client.SendTransaction(ctx, signedTx)
 	require.NoError(t, err)
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 2)
 	balance, err := client.BalanceAt(ctx, authDeployer.From, nil)
 	require.NoError(t, err)
 	require.Equal(t, amountToTransfer, balance)
@@ -118,7 +125,7 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 	require.NoError(t, err)
 	err = client.SendTransaction(ctx, signedTx)
 	require.NoError(t, err)
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 2)
 	balance, err = client.BalanceAt(ctx, precalculatedBridgeAddr, nil)
 	require.NoError(t, err)
 	require.Equal(t, amountToTransfer, balance)
@@ -126,7 +133,7 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 	// deploy bridge impl
 	bridgeImplementationAddr, _, _, err := polygonzkevmbridgev2.DeployPolygonzkevmbridgev2(authDeployer, client)
 	require.NoError(t, err)
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 2)
 
 	// deploy bridge proxy
 	nonce, err = client.PendingNonceAt(ctx, authDeployer.From)
@@ -147,6 +154,9 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 		[]byte{}, // gasTokenMetadata
 	)
 	require.NoError(t, err)
+	code, err := client.CodeAt(ctx, bridgeImplementationAddr, nil)
+	require.NoError(t, err)
+	require.NotEqual(t, len(code), 0)
 	bridgeAddr, _, _, err := transparentupgradableproxy.DeployTransparentupgradableproxy(
 		authDeployer,
 		client,
@@ -159,7 +169,7 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 		err = fmt.Errorf("error calculating bridge addr. Expected: %s. Actual: %s", precalculatedBridgeAddr, bridgeAddr)
 		require.NoError(t, err)
 	}
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 2)
 	bridgeContract, err := polygonzkevmbridgev2.NewPolygonzkevmbridgev2(bridgeAddr, client)
 	require.NoError(t, err)
 	checkGERAddr, err := bridgeContract.GlobalExitRootManager(&bind.CallOpts{})
@@ -170,23 +180,9 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 	}
 
 	// deploy GER
-	gerAddr, _, gerContract, err := gerContractL2.DeployPessimisticglobalexitroot(authDeployer, client, auth.From)
+	gerAddr, _, gerContract, err := gerl2.DeployGerl2(authDeployer, client, auth.From)
 	require.NoError(t, err)
-	time.Sleep(time.Second)
-
-	_GLOBAL_EXIT_ROOT_SETTER_ROLE := common.HexToHash("0x7b95520991dfda409891be0afa2635b63540f92ee996fda0bf695a166e5c5176")
-	_, err = gerContract.GrantRole(authDeployer, _GLOBAL_EXIT_ROOT_SETTER_ROLE, auth.From)
-	require.NoError(t, err)
-	time.Sleep(time.Second)
-	hasRole, _ := gerContract.HasRole(&bind.CallOpts{Pending: false}, _GLOBAL_EXIT_ROOT_SETTER_ROLE, auth.From)
-	if !hasRole {
-		err = errors.New("failed to set role")
-		require.NoError(t, err)
-	}
-	if precalculatedAddr != gerAddr {
-		err = errors.New("error calculating addr")
-		require.NoError(t, err)
-	}
+	time.Sleep(time.Second * 2)
 
 	return gerAddr, gerContract, bridgeAddr, bridgeContract
 }
@@ -201,9 +197,9 @@ func editConfig(t *testing.T, gerL2, bridgeL2 common.Address) {
 }
 
 func runCDK(t *testing.T) {
-	msg, err := exec.Command("bash", "-l", "-c", "docker compose up -d test-aggoracle-cdk").CombinedOutput()
+	msg, err := exec.Command("bash", "-l", "-c", "docker compose up -d test-fep-type1-cdk").CombinedOutput()
 	require.NoError(t, err, string(msg))
-	time.Sleep(time.Second)
+	time.Sleep(time.Second * 2)
 	require.NoError(t, err)
 }
 
@@ -254,7 +250,7 @@ func runBridgeL1toL2Test(
 				found = true
 				break
 			}
-			time.Sleep(time.Second)
+			time.Sleep(time.Second * 2)
 		}
 		require.True(t, found)
 		fmt.Println("Bridge includded at L1 Info Tree Index: ", bridgeIncluddedAtIndex)
@@ -266,7 +262,7 @@ func runBridgeL1toL2Test(
 				found = true
 				break
 			}
-			time.Sleep(time.Second)
+			time.Sleep(time.Second * 2)
 		}
 		require.True(t, found)
 		require.NoError(t, err)
@@ -292,7 +288,7 @@ func runBridgeL1toL2Test(
 				found = true
 				break
 			}
-			time.Sleep(time.Second)
+			time.Sleep(time.Second * 2)
 		}
 		require.True(t, found)
 		fmt.Println("service reports that the claim tx is succesful")

@@ -31,8 +31,8 @@ var (
 
 // MultigerassertorMetaData contains all meta data concerning the Multigerassertor contract.
 var MultigerassertorMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"contractIPolygonZkEVMGlobalExitRootV2\",\"name\":\"_globalExitRootManager\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"GERs\",\"type\":\"bytes32[]\"}],\"name\":\"checkGERsExistance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"globalExitRootManager\",\"outputs\":[{\"internalType\":\"contractIPolygonZkEVMGlobalExitRootV2\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
-	Bin: "0x60a060405234801561000f575f80fd5b506040516102f93803806102f983398101604081905261002e9161003f565b6001600160a01b031660805261006c565b5f6020828403121561004f575f80fd5b81516001600160a01b0381168114610065575f80fd5b9392505050565b6080516102706100895f395f81816065015260ac01526102705ff3fe608060405234801561000f575f80fd5b5060043610610034575f3560e01c80636212cd4814610038578063d02103ca14610060575b5f80fd5b61004b61004636600461017c565b61009f565b60405190151581526020015b60405180910390f35b6100877f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b039091168152602001610057565b5f805b82811015610170577f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031663257b36328585848181106100eb576100eb6101eb565b905060200201356040518263ffffffff1660e01b815260040161011091815260200190565b602060405180830381865afa15801561012b573d5f803e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061014f91906101ff565b5f0361015e575f915050610176565b8061016881610216565b9150506100a2565b50600190505b92915050565b5f806020838503121561018d575f80fd5b823567ffffffffffffffff808211156101a4575f80fd5b818501915085601f8301126101b7575f80fd5b8135818111156101c5575f80fd5b8660208260051b85010111156101d9575f80fd5b60209290920196919550909350505050565b634e487b7160e01b5f52603260045260245ffd5b5f6020828403121561020f575f80fd5b5051919050565b5f6001820161023357634e487b7160e01b5f52601160045260245ffd5b506001019056fea26469706673582212203c9478c061401916bc0b90e4c65c4af7102f87dd749934602248375847fa2dc564736f6c63430008140033",
+	ABI: "[{\"inputs\":[{\"internalType\":\"contractIPolygonZkEVMGlobalExitRootV2\",\"name\":\"_globalExitRootManager\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"bytes32[]\",\"name\":\"GERs\",\"type\":\"bytes32[]\"}],\"name\":\"CheckGERsExistance\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"globalExitRootManager\",\"outputs\":[{\"internalType\":\"contractIPolygonZkEVMGlobalExitRootV2\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	Bin: "0x60a060405234801561000f575f80fd5b506040516102f93803806102f983398101604081905261002e9161003f565b6001600160a01b031660805261006c565b5f6020828403121561004f575f80fd5b81516001600160a01b0381168114610065575f80fd5b9392505050565b6080516102706100895f395f81816065015260ac01526102705ff3fe608060405234801561000f575f80fd5b5060043610610034575f3560e01c8063cbaf6bbd14610038578063d02103ca14610060575b5f80fd5b61004b61004636600461017c565b61009f565b60405190151581526020015b60405180910390f35b6100877f000000000000000000000000000000000000000000000000000000000000000081565b6040516001600160a01b039091168152602001610057565b5f805b82811015610170577f00000000000000000000000000000000000000000000000000000000000000006001600160a01b031663257b36328585848181106100eb576100eb6101eb565b905060200201356040518263ffffffff1660e01b815260040161011091815260200190565b602060405180830381865afa15801561012b573d5f803e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061014f91906101ff565b5f0361015e575f915050610176565b8061016881610216565b9150506100a2565b50600190505b92915050565b5f806020838503121561018d575f80fd5b823567ffffffffffffffff808211156101a4575f80fd5b818501915085601f8301126101b7575f80fd5b8135818111156101c5575f80fd5b8660208260051b85010111156101d9575f80fd5b60209290920196919550909350505050565b634e487b7160e01b5f52603260045260245ffd5b5f6020828403121561020f575f80fd5b5051919050565b5f6001820161023357634e487b7160e01b5f52601160045260245ffd5b506001019056fea2646970667358221220275b83f505e82a86dcb671dcf7758cbf3985ccbf3481c8b09a05d1afad2a893164736f6c63430008140033",
 }
 
 // MultigerassertorABI is the input ABI used to generate the binding from.
@@ -202,12 +202,12 @@ func (_Multigerassertor *MultigerassertorTransactorRaw) Transact(opts *bind.Tran
 	return _Multigerassertor.Contract.contract.Transact(opts, method, params...)
 }
 
-// CheckGERsExistance is a free data retrieval call binding the contract method 0x6212cd48.
+// CheckGERsExistance is a free data retrieval call binding the contract method 0xcbaf6bbd.
 //
-// Solidity: function checkGERsExistance(bytes32[] GERs) view returns(bool)
+// Solidity: function CheckGERsExistance(bytes32[] GERs) view returns(bool)
 func (_Multigerassertor *MultigerassertorCaller) CheckGERsExistance(opts *bind.CallOpts, GERs [][32]byte) (bool, error) {
 	var out []interface{}
-	err := _Multigerassertor.contract.Call(opts, &out, "checkGERsExistance", GERs)
+	err := _Multigerassertor.contract.Call(opts, &out, "CheckGERsExistance", GERs)
 
 	if err != nil {
 		return *new(bool), err
@@ -219,16 +219,16 @@ func (_Multigerassertor *MultigerassertorCaller) CheckGERsExistance(opts *bind.C
 
 }
 
-// CheckGERsExistance is a free data retrieval call binding the contract method 0x6212cd48.
+// CheckGERsExistance is a free data retrieval call binding the contract method 0xcbaf6bbd.
 //
-// Solidity: function checkGERsExistance(bytes32[] GERs) view returns(bool)
+// Solidity: function CheckGERsExistance(bytes32[] GERs) view returns(bool)
 func (_Multigerassertor *MultigerassertorSession) CheckGERsExistance(GERs [][32]byte) (bool, error) {
 	return _Multigerassertor.Contract.CheckGERsExistance(&_Multigerassertor.CallOpts, GERs)
 }
 
-// CheckGERsExistance is a free data retrieval call binding the contract method 0x6212cd48.
+// CheckGERsExistance is a free data retrieval call binding the contract method 0xcbaf6bbd.
 //
-// Solidity: function checkGERsExistance(bytes32[] GERs) view returns(bool)
+// Solidity: function CheckGERsExistance(bytes32[] GERs) view returns(bool)
 func (_Multigerassertor *MultigerassertorCallerSession) CheckGERsExistance(GERs [][32]byte) (bool, error) {
 	return _Multigerassertor.Contract.CheckGERsExistance(&_Multigerassertor.CallOpts, GERs)
 }

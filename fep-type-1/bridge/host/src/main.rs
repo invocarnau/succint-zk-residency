@@ -15,7 +15,7 @@ mod cli;
 use cli::ProviderArgs;
 use clap::Parser;
 
-use polccint_lib::{BridgeCommit, BridgeInput};
+use polccint_lib::{BridgeCommit, BridgeInput, SP1CCProofFixture};
 use polccint_lib::constants::CALLER;
 
 // try what happens if the calls revert?¿
@@ -37,14 +37,7 @@ const CONTRACT_GER_L2: Address = address!("0506B9383477F682DDB3701CD43eD30B99580
 /// The ELF we want to execute inside the zkVM.
 const ELF: &[u8] = include_bytes!("../../../../elf/bridge");
 
-/// A fixture that can be used to test the verification of SP1 zkVM proofs inside Solidity.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct SP1CCProofFixture {
-    vkey: String,
-    public_values: String,
-    proof: String,
-}
+
 
 /// Generate a `SP1CCProofFixture`, and save it as a json file.
 ///

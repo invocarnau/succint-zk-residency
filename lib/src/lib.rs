@@ -50,4 +50,14 @@ pub struct FinalAggregationInput {
     pub bridge_commit: BridgeCommit,
 }
 
+
+/// A fixture that can be used to test the verification of SP1 zkVM proofs inside Solidity.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SP1CCProofFixture {
+    pub vkey: String,
+    pub public_values: String,
+    pub proof: String,
+}
+
 pub mod constants;

@@ -32,7 +32,11 @@ sp1-sdk.workspace = true
 
 # alloy
 alloy-provider.workspace = true
-
+alloy-sol-types.workspace = true
+alloy-sol-macro.workspace = true
+alloy.workspace = true
+alloy-primitives.workspace = true
+alloy-rpc-types.workspace = true
 
 [build-dependencies]
 sp1-build = "2.0.0"

@@ -41,6 +41,7 @@ const ELF_FINAL_AGGREGATION: &[u8] = include_bytes!("../../../../elf/aggregation
 const CONTRACT_GER_L1: Address = address!("0506B9383477F682DDB3701CD43eD30B9958099b");
 const CONTRACT_GER_L2: Address = address!("0506B9383477F682DDB3701CD43eD30B9958099b");
 
+// cargo run --release -- --chain-id 1 --block-number 6797425
 // try what happens if the calls revert?¿
 sol! (
     interface GlobalExitRootManagerL2SovereignChain {
@@ -106,7 +107,7 @@ async fn main() -> eyre::Result<()> {
     let (bridge_pk, bridge_vk) = client.setup(ELF_BRIDGE);
     let (final_aggregation_pk, final_aggregation_vk) = client.setup(ELF_FINAL_AGGREGATION);
 
-    // cargo run --release -- --chain-id 1 --block-number 18884864
+    // cargo run --release -- --chain-id 1 --block-number 6797425
     let initial_block_number = 6797425;//args.block_number;
     let block_range = 2; // hardcode for now TODO
     let final_block_number = initial_block_number + block_range;
@@ -114,6 +115,7 @@ async fn main() -> eyre::Result<()> {
     let mut inputs: Vec<AggregationInput> = Vec::new();
 
     for block_number in initial_block_number..final_block_number {
+        println!("Generating block proof for block {}", block_number);
         let client_input = host_executor
             .execute(block_number, variant)
             .await
@@ -123,6 +125,7 @@ async fn main() -> eyre::Result<()> {
         let buffer = bincode::serialize(&client_input).unwrap();
         stdin_block.write_vec(buffer);
         stdin_block.write(&client_input);
+
         let proof = client
             .prove(&block_pk.clone(), stdin_block)
             .compressed()
@@ -136,6 +139,7 @@ async fn main() -> eyre::Result<()> {
             }
         );
     }
+    println!("Generated all block proofs");
 
     // encode aggregation input and write to stdin
     let mut stdin_aggregation = SP1Stdin::new();
@@ -156,6 +160,8 @@ async fn main() -> eyre::Result<()> {
         stdin_aggregation.write_proof(proof, input.vk.vk);
     }
     
+    println!("Generating aggregation proof");
+
     let proof_aggregation = client
     .prove(&aggregation_pk.clone(), stdin_aggregation.clone())
     .compressed()
@@ -172,6 +178,7 @@ async fn main() -> eyre::Result<()> {
     ];
     
     // 1. Get the the last injecter GER of the previous block on L2
+    println!("FEtching brige information");
 
     // Setup the provider and host executor for initial GER
     let mut executor_injected_ger_count = 
@@ -251,6 +258,7 @@ async fn main() -> eyre::Result<()> {
     let mut stdin_bridge = SP1Stdin::new();
     stdin_bridge.write(&bridge_input);
 
+    println!("Generating bridge proof");
     let proof_bridge = client
     .prove(&bridge_pk.clone(), stdin_bridge.clone())
     .compressed()
@@ -282,11 +290,19 @@ async fn main() -> eyre::Result<()> {
     stdin_final_aggregation.write_proof(proof, bridge_vk.vk);
 
     
-    let proof_final_aggregation = client
-    .prove(&final_aggregation_pk.clone(), stdin_final_aggregation.clone())
-    .compressed()
-    .run()
-    .expect("proving failed");
+    // Only execute the program.
+    let (mut public_values_final_aggregation, execution_report) =
+        client.execute(&final_aggregation_pk.elf, stdin_final_aggregation.clone()).run().unwrap();
+    println!(
+        "Finished executing the block in {} cycles",
+        execution_report.total_instruction_count()
+    );
+
+    // let proof_final_aggregation = client
+    // .prove(&final_aggregation_pk.clone(), stdin_final_aggregation.clone())
+    // .compressed()
+    // .run()
+    // .expect("proving failed");
     Ok(())
 }
 

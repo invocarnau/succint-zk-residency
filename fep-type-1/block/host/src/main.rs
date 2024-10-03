@@ -3,12 +3,14 @@ use clap::Parser;
 use reth_primitives::B256;
 use rsp_client_executor::{io::ClientExecutorInput, ChainVariant, CHAIN_ID_ETH_MAINNET};
 use rsp_host_executor::HostExecutor;
-use sp1_sdk::{utils, ProverClient, SP1Stdin};
+use sp1_sdk::{HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWithPublicValues};
 use std::path::PathBuf;
 mod cli;
 use cli::ProviderArgs;
 use url::Url;
-use polccint_lib::BlockCommit;
+use polccint_lib::{BlockCommit, SP1CCProofFixture};
+use alloy::hex;
+use std::io::Read;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -102,15 +104,45 @@ async fn main() -> eyre::Result<()> {
     // It is strongly recommended you use the network prover given the size of these programs.
     if args.prove {
         println!("Starting proof generation.");
-        let proof = client
+        let proof: SP1ProofWithPublicValues = client
             .prove(&pk, stdin)
+            .compressed()
             .run()
             .expect("Proving should work.");
         println!("Proof generation finished.");
+
+        save_fixture(vk.clone().bytes32(), &proof, args.block_number, provider_config.chain_id);
 
         client
             .verify(&proof, &vk)
             .expect("proof verification should succeed");
     }
     Ok(())
+}
+
+/// Generate a `SP1CCProofFixture`, and save it as a json file.
+///
+/// This is useful for verifying the proof of contract call execution on chain.
+fn save_fixture(vkey: String, proof: &SP1ProofWithPublicValues, block_number: u64, chain_id: u64) {
+    let fixture = SP1CCProofFixture {
+        vkey,
+        public_values: format!("0x{}", hex::encode(proof.public_values.as_slice())),
+        proof: format!("0x{}", hex::encode(proof.bytes())),
+    };
+
+    let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../proof/chain{}/block_{}_proof_fixture.jso", chain_id, block_number));
+    std::fs::create_dir_all(&fixture_path).expect("failed to create fixture path");
+    std::fs::write(
+        fixture_path.join("plonk-fixture.json".to_lowercase()),
+        serde_json::to_string_pretty(&fixture).unwrap(),
+    )
+    .expect("failed to write fixture");
+}
+
+fn read_fixture(block_number: u64, chain_id: u64) -> SP1CCProofFixture {
+    let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../proof/chain{}/block_{}_proof_fixture.json", chain_id, block_number));
+    let mut file = std::fs::File::open(fixture_path).expect("failed to open fixture file");
+    let mut contents = String::new();
+    file.read_to_string(&mut contents).expect("failed to read fixture file");
+    serde_json::from_str(&contents).expect("failed to deserialize fixture")
 }

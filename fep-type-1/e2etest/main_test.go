@@ -41,6 +41,8 @@ const (
 var (
 	gerAddrL2AlreadyDeployed    = common.HexToAddress("0x8058D80131e6F57E99830Dce403BBAF4e64C9b8A")
 	bridgeAddrL2AlreadyDeployed = common.HexToAddress("0xb0a5546A0Efd8950D8964a9dB66DFF5569EEfDE7")
+	gerAddrL1                   = common.HexToAddress("0x8A791620dd6260079BF849Dc5567aDC3F2FdC318")
+	bridgeAddrL1                = common.HexToAddress(("0xFe12ABaa190Ef0c8638Ee0ba9F828BF41368Ca0E"))
 )
 
 func TestBridgeEVM(t *testing.T) {
@@ -78,8 +80,6 @@ func runL1(t *testing.T) (
 	common.Address,
 	*polygonzkevmbridgev2.Polygonzkevmbridgev2,
 ) {
-	gerAddr := common.HexToAddress("0x8A791620dd6260079BF849Dc5567aDC3F2FdC318")
-	bridgeAddr := common.HexToAddress(("0xFe12ABaa190Ef0c8638Ee0ba9F828BF41368Ca0E"))
 	if !alreadyDeployed {
 		msg, err := exec.Command("bash", "-l", "-c", "docker compose up -d test-fep-type1-l1").CombinedOutput()
 		require.NoError(t, err, string(msg))
@@ -87,11 +87,11 @@ func runL1(t *testing.T) (
 	}
 	client, err := ethclient.Dial(l1URL)
 	require.NoError(t, err)
-	gerContract, err := gerContractL1.NewPolygonzkevmglobalexitrootv2(gerAddr, client)
+	gerContract, err := gerContractL1.NewPolygonzkevmglobalexitrootv2(gerAddrL1, client)
 	require.NoError(t, err)
-	bridgeContract, err := polygonzkevmbridgev2.NewPolygonzkevmbridgev2(bridgeAddr, client)
+	bridgeContract, err := polygonzkevmbridgev2.NewPolygonzkevmbridgev2(bridgeAddrL1, client)
 	require.NoError(t, err)
-	return client, gerAddr, gerContract, bridgeAddr, bridgeContract
+	return client, gerAddrL1, gerContract, bridgeAddrL1, bridgeContract
 }
 
 func runL2(t *testing.T, auth *bind.TransactOpts) (
@@ -243,7 +243,7 @@ func runBridgeL1toL2Test(
 		// Send bridge L1 -> L2
 		fmt.Println("--- ITERATION ", i)
 		fmt.Println("sending bridge tx to L1")
-		amount := big.NewInt(int64(i + 1))
+		amount := big.NewInt(1000000000000000000) //nolint:gomnd
 		authL1.Value = amount
 		claimL1toL2 := claimsponsor.Claim{
 			LeafType:           0,
@@ -340,6 +340,8 @@ func runBridgeL1toL2Test(
 
 		// bridge back to L1
 		fmt.Println("bridging back to L1...")
+		amount = big.NewInt(1000000) //nolint:gomnd
+		authL2.Value = amount
 		claimL2toL1 := claimsponsor.Claim{
 			LeafType:           0,
 			OriginNetwork:      0,
@@ -351,7 +353,15 @@ func runBridgeL1toL2Test(
 		}
 
 		fmt.Println("sending bridge tx  to L2")
-		tx, err = bridgeL1.BridgeAsset(authL2, claimL2toL1.DestinationNetwork, claimL2toL1.DestinationAddress, claimL2toL1.Amount, claimL2toL1.OriginTokenAddress, true, nil)
+		balance, err := clientL2.BalanceAt(context.TODO(), authL2.From, nil)
+		require.NoError(t, err)
+		fmt.Println("balance: ", balance)
+		tx, err = bridgeL2.BridgeAsset(authL2, claimL2toL1.DestinationNetwork, claimL2toL1.DestinationAddress, claimL2toL1.Amount, claimL2toL1.OriginTokenAddress, false, nil)
+		// if err != nil {
+		// 	authL2.GasPrice = big.NewInt(1) //nolint:gomnd
+		// 	authL2.GasLimit = 1000000
+		// 	authL2.
+		// }
 		require.NoError(t, err)
 		time.Sleep(time.Second * 2)
 		receipt, err = clientL2.TransactionReceipt(context.TODO(), tx.Hash())
@@ -382,15 +392,24 @@ func runBridgeL1toL2Test(
 		fmt.Printf("ClaimProof received from bridge service\n")
 
 		fmt.Println("send claim tx")
-		bridgeL1.ClaimAsset(
+		proofLocalExitRoot := [32][32]byte{}
+		proofRollupExitRoot := [32][32]byte{}
+		for i := 0; i < 32; i++ {
+			proofLocalExitRoot[i] = proof.ProofLocalExitRoot[i]
+			proofRollupExitRoot[i] = proof.ProofRollupExitRoot[i]
+		}
+		_, err = bridgeL1.ClaimAsset(
 			authL1,
-			proof.ProofLocalExitRoot,
-			proof.ProofRollupExitRoot,
+			proofLocalExitRoot,
+			proofRollupExitRoot,
 			amount,
 			info.MainnetExitRoot,
 			info.RollupExitRoot,
 			bridgeIncluddedAtIndex,
 			common.Address{}, 0, authL1.From, amount, nil,
 		)
+		require.NoError(t, err)
+		time.Sleep(time.Second * 2)
+		fmt.Println("claim tx mined on L1")
 	}
 }

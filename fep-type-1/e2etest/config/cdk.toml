@@ -37,7 +37,7 @@ URLRPCL1="http://test-fep-type1-l2:8545"
 BlockFinality="FinalizedBlock"
 WaitPeriodNextGER="1s"
 	[AggOracle.EVMSender]
-		GlobalExitRootL2="0xd7f3718473c5Ea7646282DCa55ab1abEe4f6B27a"
+		GlobalExitRootL2="0x8058D80131e6F57E99830Dce403BBAF4e64C9b8A"
 		URLRPCL2="http://test-fep-type1-l2:8545"
 		ChainIDL2=42069
 		GasOffset=0
@@ -75,7 +75,7 @@ MaxRequestsPerIPAndSecond = 10
 DBPath = "/tmp/claimsopnsor"
 Enabled = true
 SenderAddr = "0x976ea74026e726554db657fa54763abd0c3a0aa9"
-BridgeAddrL2 = "0xB0b0cE3949B4B3528cC013A2F305527E571d17Ba"
+BridgeAddrL2 = "0xb0a5546A0Efd8950D8964a9dB66DFF5569EEfDE7"
 MaxGas = 200000
 RetryAfterErrorPeriod = "1s"
 MaxRetryAttemptsAfterError = -1
@@ -100,7 +100,7 @@ GasOffset = 0
 			[ClaimSponsor.EthTxManager.Etherman]
 				URL = "http://test-fep-type1-l2:8545"
 				MultiGasProvider = false
-				L1ChainID = 1337
+				L1ChainID = 42069
 				HTTPHeaders = []
 
 [L1Bridge2InfoIndexSync]
@@ -123,7 +123,7 @@ WaitForNewBlocksPeriod = "3s"
 DBPath = "/tmp/bridgel2sync"
 BlockFinality = "LatestBlock"
 InitialBlockNum = 0
-BridgeAddr = "0xB0b0cE3949B4B3528cC013A2F305527E571d17Ba"
+BridgeAddr = "0xb0a5546A0Efd8950D8964a9dB66DFF5569EEfDE7"
 SyncBlockChunkSize = 100
 RetryAfterErrorPeriod = "1s"
 MaxRetryAttemptsAfterError = -1
@@ -133,7 +133,7 @@ WaitForNewBlocksPeriod = "3s"
 DBPath = "/tmp/lastgersync"
 BlockFinality = "LatestBlock"
 InitialBlockNum = 0
-GlobalExitRootL2Addr = "0xd7f3718473c5Ea7646282DCa55ab1abEe4f6B27a"
+GlobalExitRootL2Addr = "0x8058D80131e6F57E99830Dce403BBAF4e64C9b8A"
 RetryAfterErrorPeriod = "1s"
 MaxRetryAttemptsAfterError = -1
 WaitForNewBlocksPeriod = "1s"

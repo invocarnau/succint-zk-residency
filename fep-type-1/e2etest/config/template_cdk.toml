@@ -100,7 +100,7 @@ GasOffset = 0
 			[ClaimSponsor.EthTxManager.Etherman]
 				URL = "http://test-fep-type1-l2:8545"
 				MultiGasProvider = false
-				L1ChainID = 1337
+				L1ChainID = 42069
 				HTTPHeaders = []
 
 [L1Bridge2InfoIndexSync]

@@ -30,22 +30,31 @@ import (
 )
 
 const (
-	l1ChainID = 1337
-	l2ChainID = 42069
+	l1ChainID       = 1337
+	l2ChainID       = 42069
+	l1URL           = "http://localhost:8545"
+	l2URL           = "http://localhost:8555"
+	alreadyDeployed = true
+)
+
+var (
+	gerAddrL2AlreadyDeployed    = common.HexToAddress("0x8058D80131e6F57E99830Dce403BBAF4e64C9b8A")
+	bridgeAddrL2AlreadyDeployed = common.HexToAddress("0xb0a5546A0Efd8950D8964a9dB66DFF5569EEfDE7")
 )
 
 func TestBridgeEVM(t *testing.T) {
 	// defer exec.Command("bash", "-l", "-c", "docker compose down").Run()
 	authL1, authL2 := loadAuth(t)
 	fmt.Println("running L1 network (turning up docker container)...")
-	_, gerL1, _, bridgeL1 := runL1(t)
+	clientL1, _, gerL1, _, bridgeL1 := runL1(t)
 	fmt.Println("running L2 network (turning up docker container + deploy contracts)...")
 	gerAddrL2, _, bridgeAddrL2, bridgeL2 := runL2(t, authL2)
-	fmt.Println("running CDK client for L2 (turning up docker container)...")
-	editConfig(t, gerAddrL2, bridgeAddrL2)
-	runCDK(t)
-
-	runBridgeL1toL2Test(t, authL1, authL2, gerL1, bridgeL1, bridgeL2)
+	if !alreadyDeployed {
+		fmt.Println("running CDK client for L2 (turning up docker container)...")
+		editConfig(t, gerAddrL2, bridgeAddrL2)
+		runCDK(t)
+	}
+	runBridgeL1toL2Test(t, clientL1, authL1, authL2, gerL1, bridgeL1, bridgeL2)
 }
 
 func loadAuth(t *testing.T) (*bind.TransactOpts, *bind.TransactOpts) {
@@ -61,6 +70,7 @@ func loadAuth(t *testing.T) (*bind.TransactOpts, *bind.TransactOpts) {
 }
 
 func runL1(t *testing.T) (
+	*ethclient.Client,
 	common.Address,
 	*gerContractL1.Polygonzkevmglobalexitrootv2,
 	common.Address,
@@ -68,16 +78,18 @@ func runL1(t *testing.T) (
 ) {
 	gerAddr := common.HexToAddress("0x8A791620dd6260079BF849Dc5567aDC3F2FdC318")
 	bridgeAddr := common.HexToAddress(("0xFe12ABaa190Ef0c8638Ee0ba9F828BF41368Ca0E"))
-	msg, err := exec.Command("bash", "-l", "-c", "docker compose up -d test-fep-type1-l1").CombinedOutput()
-	require.NoError(t, err, string(msg))
-	time.Sleep(time.Second * 2)
-	client, err := ethclient.Dial("http://localhost:8545")
+	if alreadyDeployed {
+		msg, err := exec.Command("bash", "-l", "-c", "docker compose up -d test-fep-type1-l1").CombinedOutput()
+		require.NoError(t, err, string(msg))
+		time.Sleep(time.Second * 2)
+	}
+	client, err := ethclient.Dial(l1URL)
 	require.NoError(t, err)
 	gerContract, err := gerContractL1.NewPolygonzkevmglobalexitrootv2(gerAddr, client)
 	require.NoError(t, err)
 	bridgeContract, err := polygonzkevmbridgev2.NewPolygonzkevmbridgev2(bridgeAddr, client)
 	require.NoError(t, err)
-	return gerAddr, gerContract, bridgeAddr, bridgeContract
+	return client, gerAddr, gerContract, bridgeAddr, bridgeContract
 }
 
 func runL2(t *testing.T, auth *bind.TransactOpts) (
@@ -86,105 +98,115 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 	common.Address,
 	*polygonzkevmbridgev2.Polygonzkevmbridgev2,
 ) {
-	msg, err := exec.Command("bash", "-l", "-c", "docker compose up -d test-fep-type1-l2").CombinedOutput()
-	require.NoError(t, err, string(msg))
-	time.Sleep(time.Second * 2)
+	client, err := ethclient.Dial(l2URL)
 	require.NoError(t, err)
-	client, err := ethclient.Dial("http://localhost:8555")
-	require.NoError(t, err)
-
-	// create tmp auth to deploy contracts
-	ctx := context.Background()
-	privateKeyL2, err := crypto.GenerateKey()
-	require.NoError(t, err)
-	authDeployer, err := bind.NewKeyedTransactorWithChainID(privateKeyL2, big.NewInt(l2ChainID))
-	require.NoError(t, err)
-
-	// fund deployer
-	nonce, err := client.PendingNonceAt(ctx, auth.From)
-	require.NoError(t, err)
-	amountToTransfer, _ := new(big.Int).SetString("1000000000000000000", 10) //nolint:gomnd
-	gasPrice, err := client.SuggestGasPrice(ctx)
-	require.NoError(t, err)
-	gasLimit, err := client.EstimateGas(ctx, ethereum.CallMsg{From: auth.From, To: &authDeployer.From, Value: amountToTransfer})
-	require.NoError(t, err)
-	tx := types.NewTransaction(nonce, authDeployer.From, amountToTransfer, gasLimit, gasPrice, nil)
-	signedTx, err := auth.Signer(auth.From, tx)
-	require.NoError(t, err)
-	err = client.SendTransaction(ctx, signedTx)
-	require.NoError(t, err)
-	time.Sleep(time.Second * 2)
-	balance, err := client.BalanceAt(ctx, authDeployer.From, nil)
-	require.NoError(t, err)
-	require.Equal(t, amountToTransfer, balance)
-
-	// fund bridge
-	precalculatedBridgeAddr := crypto.CreateAddress(authDeployer.From, 1)
-	tx = types.NewTransaction(nonce+1, precalculatedBridgeAddr, amountToTransfer, gasLimit, gasPrice, nil)
-	signedTx, err = auth.Signer(auth.From, tx)
-	require.NoError(t, err)
-	err = client.SendTransaction(ctx, signedTx)
-	require.NoError(t, err)
-	time.Sleep(time.Second * 2)
-	balance, err = client.BalanceAt(ctx, precalculatedBridgeAddr, nil)
-	require.NoError(t, err)
-	require.Equal(t, amountToTransfer, balance)
-
-	// deploy bridge impl
-	bridgeImplementationAddr, _, _, err := polygonzkevmbridgev2.DeployPolygonzkevmbridgev2(authDeployer, client)
-	require.NoError(t, err)
-	time.Sleep(time.Second * 2)
-
-	// deploy bridge proxy
-	nonce, err = client.PendingNonceAt(ctx, authDeployer.From)
-	require.NoError(t, err)
-	precalculatedAddr := crypto.CreateAddress(authDeployer.From, nonce+1)
-	bridgeABI, err := polygonzkevmbridgev2.Polygonzkevmbridgev2MetaData.GetAbi()
-	require.NoError(t, err)
-	if bridgeABI == nil {
-		err = errors.New("GetABI returned nil")
+	if !alreadyDeployed {
+		msg, err := exec.Command("bash", "-l", "-c", "docker compose up -d test-fep-type1-l2").CombinedOutput()
+		require.NoError(t, err, string(msg))
+		time.Sleep(time.Second * 2)
 		require.NoError(t, err)
-	}
-	dataCallProxy, err := bridgeABI.Pack("initialize",
-		uint32(1),        //network ID
-		common.Address{}, // gasTokenAddressMainnet"
-		uint32(0),        // gasTokenNetworkMainnet
-		precalculatedAddr,
-		common.Address{},
-		[]byte{}, // gasTokenMetadata
-	)
-	require.NoError(t, err)
-	code, err := client.CodeAt(ctx, bridgeImplementationAddr, nil)
-	require.NoError(t, err)
-	require.NotEqual(t, len(code), 0)
-	bridgeAddr, _, _, err := transparentupgradableproxy.DeployTransparentupgradableproxy(
-		authDeployer,
-		client,
-		bridgeImplementationAddr,
-		authDeployer.From,
-		dataCallProxy,
-	)
-	require.NoError(t, err)
-	if bridgeAddr != precalculatedBridgeAddr {
-		err = fmt.Errorf("error calculating bridge addr. Expected: %s. Actual: %s", precalculatedBridgeAddr, bridgeAddr)
-		require.NoError(t, err)
-	}
-	time.Sleep(time.Second * 2)
-	bridgeContract, err := polygonzkevmbridgev2.NewPolygonzkevmbridgev2(bridgeAddr, client)
-	require.NoError(t, err)
-	checkGERAddr, err := bridgeContract.GlobalExitRootManager(&bind.CallOpts{})
-	require.NoError(t, err)
-	if precalculatedAddr != checkGERAddr {
-		err = errors.New("error deploying bridge")
-		require.NoError(t, err)
-	}
 
-	// deploy GER
-	gerAddr, _, gerContract, err := gerl2.DeployGerl2(authDeployer, client, auth.From)
-	require.NoError(t, err)
-	time.Sleep(time.Second * 2)
+		// create tmp auth to deploy contracts
+		ctx := context.Background()
+		privateKeyL2, err := crypto.GenerateKey()
+		require.NoError(t, err)
+		authDeployer, err := bind.NewKeyedTransactorWithChainID(privateKeyL2, big.NewInt(l2ChainID))
+		require.NoError(t, err)
 
-	return gerAddr, gerContract, bridgeAddr, bridgeContract
+		// fund deployer
+		nonce, err := client.PendingNonceAt(ctx, auth.From)
+		require.NoError(t, err)
+		amountToTransfer, _ := new(big.Int).SetString("1000000000000000000", 10) //nolint:gomnd
+		gasPrice, err := client.SuggestGasPrice(ctx)
+		require.NoError(t, err)
+		gasLimit, err := client.EstimateGas(ctx, ethereum.CallMsg{From: auth.From, To: &authDeployer.From, Value: amountToTransfer})
+		require.NoError(t, err)
+		tx := types.NewTransaction(nonce, authDeployer.From, amountToTransfer, gasLimit, gasPrice, nil)
+		signedTx, err := auth.Signer(auth.From, tx)
+		require.NoError(t, err)
+		err = client.SendTransaction(ctx, signedTx)
+		require.NoError(t, err)
+		time.Sleep(time.Second * 2)
+		balance, err := client.BalanceAt(ctx, authDeployer.From, nil)
+		require.NoError(t, err)
+		require.Equal(t, amountToTransfer, balance)
+
+		// fund bridge
+		precalculatedBridgeAddr := crypto.CreateAddress(authDeployer.From, 1)
+		tx = types.NewTransaction(nonce+1, precalculatedBridgeAddr, amountToTransfer, gasLimit, gasPrice, nil)
+		signedTx, err = auth.Signer(auth.From, tx)
+		require.NoError(t, err)
+		err = client.SendTransaction(ctx, signedTx)
+		require.NoError(t, err)
+		time.Sleep(time.Second * 2)
+		balance, err = client.BalanceAt(ctx, precalculatedBridgeAddr, nil)
+		require.NoError(t, err)
+		require.Equal(t, amountToTransfer, balance)
+
+		// deploy bridge impl
+		bridgeImplementationAddr, _, _, err := polygonzkevmbridgev2.DeployPolygonzkevmbridgev2(authDeployer, client)
+		require.NoError(t, err)
+		time.Sleep(time.Second * 2)
+
+		// deploy bridge proxy
+		nonce, err = client.PendingNonceAt(ctx, authDeployer.From)
+		require.NoError(t, err)
+		precalculatedAddr := crypto.CreateAddress(authDeployer.From, nonce+1)
+		bridgeABI, err := polygonzkevmbridgev2.Polygonzkevmbridgev2MetaData.GetAbi()
+		require.NoError(t, err)
+		if bridgeABI == nil {
+			err = errors.New("GetABI returned nil")
+			require.NoError(t, err)
+		}
+		dataCallProxy, err := bridgeABI.Pack("initialize",
+			uint32(1),        //network ID
+			common.Address{}, // gasTokenAddressMainnet"
+			uint32(0),        // gasTokenNetworkMainnet
+			precalculatedAddr,
+			common.Address{},
+			[]byte{}, // gasTokenMetadata
+		)
+		require.NoError(t, err)
+		code, err := client.CodeAt(ctx, bridgeImplementationAddr, nil)
+		require.NoError(t, err)
+		require.NotEqual(t, len(code), 0)
+		bridgeAddr, _, _, err := transparentupgradableproxy.DeployTransparentupgradableproxy(
+			authDeployer,
+			client,
+			bridgeImplementationAddr,
+			authDeployer.From,
+			dataCallProxy,
+		)
+		require.NoError(t, err)
+		if bridgeAddr != precalculatedBridgeAddr {
+			err = fmt.Errorf("error calculating bridge addr. Expected: %s. Actual: %s", precalculatedBridgeAddr, bridgeAddr)
+			require.NoError(t, err)
+		}
+		time.Sleep(time.Second * 2)
+		bridgeContract, err := polygonzkevmbridgev2.NewPolygonzkevmbridgev2(bridgeAddr, client)
+		require.NoError(t, err)
+		checkGERAddr, err := bridgeContract.GlobalExitRootManager(&bind.CallOpts{})
+		require.NoError(t, err)
+		if precalculatedAddr != checkGERAddr {
+			err = errors.New("error deploying bridge")
+			require.NoError(t, err)
+		}
+
+		// deploy GER
+		gerAddr, _, gerContract, err := gerl2.DeployGerl2(authDeployer, client, auth.From)
+		require.NoError(t, err)
+		time.Sleep(time.Second * 2)
+		fmt.Println("gerAddr ", gerAddr)
+		fmt.Println("bridgeAddr ", bridgeAddr)
+
+		return gerAddr, gerContract, bridgeAddr, bridgeContract
+	} else {
+		gerContract, err := gerl2.NewGerl2(gerAddrL2AlreadyDeployed, client)
+		require.NoError(t, err)
+		bridgeContract, err := polygonzkevmbridgev2.NewPolygonzkevmbridgev2(bridgeAddrL2AlreadyDeployed, client)
+		require.NoError(t, err)
+		return gerAddrL2AlreadyDeployed, gerContract, bridgeAddrL2AlreadyDeployed, bridgeContract
+	}
 }
 
 func editConfig(t *testing.T, gerL2, bridgeL2 common.Address) {
@@ -205,6 +227,7 @@ func runCDK(t *testing.T) {
 
 func runBridgeL1toL2Test(
 	t *testing.T,
+	clientL1 *ethclient.Client,
 	authL1 *bind.TransactOpts,
 	authL2 *bind.TransactOpts,
 	gerL1Contract *gerContractL1.Polygonzkevmglobalexitrootv2,
@@ -230,7 +253,7 @@ func runBridgeL1toL2Test(
 		}
 		gerBefore, err := gerL1Contract.GetLastGlobalExitRoot(nil)
 		require.NoError(t, err)
-		_, err = bridgeL1.BridgeAsset(authL1, claim.DestinationNetwork, claim.DestinationAddress, claim.Amount, claim.OriginTokenAddress, true, nil)
+		tx, err := bridgeL1.BridgeAsset(authL1, claim.DestinationNetwork, claim.DestinationAddress, claim.Amount, claim.OriginTokenAddress, true, nil)
 		require.NoError(t, err)
 		time.Sleep(time.Second * 2)
 		gerAfter, err := gerL1Contract.GetLastGlobalExitRoot(nil)
@@ -241,7 +264,12 @@ func runBridgeL1toL2Test(
 		// Interact with bridge service
 		fmt.Println("interacting with bridges service:")
 		fmt.Println("waiting for the bridge to be finalised")
-		depositCount := uint32(i) // TODO: get deposit count from SC to make the test more realistic
+		receipt, err := clientL1.TransactionReceipt(context.TODO(), tx.Hash())
+		require.NoError(t, err)
+		bridgeEvent, err := bridgeL1.ParseBridgeEvent(*receipt.Logs[0])
+		require.NoError(t, err)
+		require.Equal(t, receipt.Status, types.ReceiptStatusSuccessful)
+		depositCount := bridgeEvent.DepositCount
 		var bridgeIncluddedAtIndex uint32
 		found := false
 		for i := 0; i < 40; i++ { // block needs to be finalised, takes ~32s
@@ -282,6 +310,7 @@ func runBridgeL1toL2Test(
 		found = false
 		for i := 0; i < 20; i++ {
 			status, err := bridgeClient.GetSponsoredClaimStatus(claim.GlobalIndex)
+			fmt.Println("sponsored claim status: ", status)
 			require.NoError(t, err)
 			require.NotEqual(t, claimsponsor.FailedClaimStatus, status)
 			if status == claimsponsor.SuccessClaimStatus {
@@ -295,7 +324,7 @@ func runBridgeL1toL2Test(
 
 		// check that the bridge is claimed on L2
 		fmt.Println("checking if bridge is claimed on L2...")
-		isClaimed, err := bridgeL2.IsClaimed(&bind.CallOpts{}, uint32(i), 0)
+		isClaimed, err := bridgeL2.IsClaimed(&bind.CallOpts{}, depositCount, 0)
 		require.NoError(t, err)
 		require.True(t, isClaimed)
 		fmt.Println("birge completed!")

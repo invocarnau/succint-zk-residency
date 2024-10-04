@@ -50,6 +50,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "aggregation-final-client"
+version = "1.1.0"
+dependencies = [
+ "bincode",
+ "polccint-lib",
+ "sha2",
+ "sp1-zkvm",
+]
+
+[[package]]
 name = "ahash"
 version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1131,13 +1141,52 @@ dependencies = [
 ]
 
 [[package]]
-name = "block"
-version = "1.1.0"
+name = "block-aggregation-final"
+version = "0.1.0"
 dependencies = [
+ "alloy",
+ "alloy-primitives 0.8.5",
+ "alloy-provider",
+ "alloy-rpc-types",
+ "alloy-sol-macro 0.8.5",
+ "alloy-sol-types 0.8.5",
  "bincode",
+ "clap",
+ "dotenv",
+ "eyre",
  "polccint-lib",
- "rsp-client-executor 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "sp1-zkvm",
+ "reth-primitives",
+ "rsp-client-executor 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
+ "rsp-host-executor",
+ "serde",
+ "serde_json",
+ "sp1-build",
+ "sp1-cc-client-executor",
+ "sp1-cc-host-executor",
+ "sp1-sdk",
+ "tokio",
+ "url",
+]
+
+[[package]]
+name = "block-aggregation-host"
+version = "0.1.0"
+dependencies = [
+ "alloy-provider",
+ "bincode",
+ "clap",
+ "dotenv",
+ "eyre",
+ "polccint-lib",
+ "reth-primitives",
+ "rsp-client-executor 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
+ "rsp-host-executor",
+ "serde",
+ "serde_json",
+ "sp1-build",
+ "sp1-sdk",
+ "tokio",
+ "url",
 ]
 
 [[package]]
@@ -1157,6 +1206,42 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3078c7629b62d3f0439517fa394996acacc5cbc91c5a20d8c658e77abd503a71"
 dependencies = [
  "generic-array 0.14.7",
+]
+
+[[package]]
+name = "block-client"
+version = "0.1.0"
+dependencies = [
+ "alloy",
+ "alloy-primitives 0.8.5",
+ "alloy-provider",
+ "alloy-rpc-types",
+ "alloy-sol-macro 0.8.5",
+ "alloy-sol-types 0.8.5",
+ "bincode",
+ "clap",
+ "dotenv",
+ "eyre",
+ "polccint-lib",
+ "reth-primitives",
+ "rsp-client-executor 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
+ "rsp-host-executor",
+ "serde",
+ "serde_json",
+ "sp1-build",
+ "sp1-sdk",
+ "tokio",
+ "url",
+]
+
+[[package]]
+name = "block-host"
+version = "1.1.0"
+dependencies = [
+ "bincode",
+ "polccint-lib",
+ "rsp-client-executor 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
+ "sp1-zkvm",
 ]
 
 [[package]]
@@ -1182,6 +1267,35 @@ dependencies = [
  "glob",
  "threadpool",
  "zeroize",
+]
+
+[[package]]
+name = "bridge-host"
+version = "0.1.0"
+dependencies = [
+ "alloy",
+ "alloy-primitives 0.8.5",
+ "alloy-provider",
+ "alloy-rpc-types",
+ "alloy-sol-macro 0.8.5",
+ "alloy-sol-types 0.8.5",
+ "bincode",
+ "clap",
+ "dotenv",
+ "eyre",
+ "polccint-lib",
+ "reth-primitives",
+ "revm",
+ "rsp-client-executor 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
+ "rsp-host-executor",
+ "serde",
+ "serde_json",
+ "sp1-build",
+ "sp1-cc-client-executor",
+ "sp1-cc-host-executor",
+ "sp1-sdk",
+ "tokio",
+ "url",
 ]
 
 [[package]]
@@ -1225,6 +1339,20 @@ name = "bytemuck"
 version = "1.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "94bbb0ad554ad961ddc5da507a12a29b14e4ae5bda06b19f575a3e6079d2e2ae"
+dependencies = [
+ "bytemuck_derive",
+]
+
+[[package]]
+name = "bytemuck_derive"
+version = "1.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0cc8b54b395f2fcfbb3d90c47b01c7f444d94d05bdeb775811dec868ac3bbc26"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.79",
+]
 
 [[package]]
 name = "byteorder"
@@ -1585,8 +1713,7 @@ checksum = "7a81dae078cea95a014a339291cec439d2f232ebe854a9d672b796c6afafa9b7"
 [[package]]
 name = "crypto-bigint"
 version = "0.5.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0dc92fb57ca44df6db8059111ab3af99a63d5d0f8375d9972e319a379c6bab76"
+source = "git+https://github.com/sp1-patches/RustCrypto-bigint?branch=patch-v0.5.5#ba5c434413348d442a3e71aa76c0f09b553309ea"
 dependencies = [
  "generic-array 0.14.7",
  "rand_core",
@@ -1911,14 +2038,17 @@ checksum = "0d6ef0072f8a535281e4876be788938b528e9a1d43900b82c2569af7da799125"
 [[package]]
 name = "ecdsa"
 version = "0.16.9"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee27f32b5c5292967d2d4a9d7f1e0b0aed2c15daded5a60300e4abb9d8020bca"
+source = "git+https://github.com/sp1-patches/signatures?branch=patch-ecdsa-v0.16.9#de1b108e8140dcb86ecf56f1215ac4b7fab6fcd8"
 dependencies = [
+ "anyhow",
+ "cfg-if",
  "der",
  "digest 0.10.7",
  "elliptic-curve",
+ "hex-literal",
  "rfc6979",
  "signature",
+ "sp1-lib 1.2.0",
  "spki",
 ]
 
@@ -4308,7 +4438,7 @@ name = "polccint-lib"
 version = "1.1.0"
 dependencies = [
  "alloy-primitives 0.8.5",
- "rsp-client-executor 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
+ "rsp-client-executor 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
  "serde",
  "sp1-cc-client-executor",
 ]
@@ -5325,8 +5455,7 @@ dependencies = [
 [[package]]
 name = "rfc6979"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8dd2a808d456c4a54e300a23e9f5a67e122c3024119acbfd73e3bf664491cb2"
+source = "git+https://github.com/sp1-patches/signatures?branch=patch-ecdsa-v0.16.9#de1b108e8140dcb86ecf56f1215ac4b7fab6fcd8"
 dependencies = [
  "hmac",
  "subtle",
@@ -5417,7 +5546,7 @@ dependencies = [
 [[package]]
 name = "rsp-client-executor"
 version = "0.1.0"
-source = "git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver#ab900d040145cb36c2df6aa872c89b0a6e1a2cca"
+source = "git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique#4c73da17e6daa3893a38649d8324259c4669ac80"
 dependencies = [
  "alloy-primitives 0.8.5",
  "alloy-rlp",
@@ -5438,9 +5567,9 @@ dependencies = [
  "reth-trie",
  "revm",
  "revm-primitives",
- "rsp-mpt 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "rsp-primitives 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "rsp-witness-db 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
+ "rsp-mpt 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
+ "rsp-primitives 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
+ "rsp-witness-db 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
  "serde",
  "serde_json",
  "tokio",
@@ -5483,7 +5612,7 @@ dependencies = [
 [[package]]
 name = "rsp-host-executor"
 version = "0.1.0"
-source = "git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver#ab900d040145cb36c2df6aa872c89b0a6e1a2cca"
+source = "git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique#4c73da17e6daa3893a38649d8324259c4669ac80"
 dependencies = [
  "alloy-primitives 0.8.5",
  "alloy-provider",
@@ -5502,11 +5631,11 @@ dependencies = [
  "reth-trie",
  "revm",
  "revm-primitives",
- "rsp-client-executor 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "rsp-mpt 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "rsp-primitives 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "rsp-rpc-db 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "rsp-witness-db 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
+ "rsp-client-executor 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
+ "rsp-mpt 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
+ "rsp-primitives 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
+ "rsp-rpc-db 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
+ "rsp-witness-db 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
  "serde",
  "serde_json",
  "tokio",
@@ -5517,7 +5646,7 @@ dependencies = [
 [[package]]
 name = "rsp-mpt"
 version = "0.1.0"
-source = "git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver#ab900d040145cb36c2df6aa872c89b0a6e1a2cca"
+source = "git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique#4c73da17e6daa3893a38649d8324259c4669ac80"
 dependencies = [
  "alloy-primitives 0.8.5",
  "alloy-rlp",
@@ -5531,7 +5660,7 @@ dependencies = [
  "revm",
  "revm-primitives",
  "rlp",
- "rsp-primitives 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
+ "rsp-primitives 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
  "serde",
  "thiserror",
 ]
@@ -5561,7 +5690,7 @@ dependencies = [
 [[package]]
 name = "rsp-primitives"
 version = "0.1.0"
-source = "git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver#ab900d040145cb36c2df6aa872c89b0a6e1a2cca"
+source = "git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique#4c73da17e6daa3893a38649d8324259c4669ac80"
 dependencies = [
  "alloy-rpc-types",
  "eyre",
@@ -5599,7 +5728,7 @@ dependencies = [
 [[package]]
 name = "rsp-rpc-db"
 version = "0.1.0"
-source = "git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver#ab900d040145cb36c2df6aa872c89b0a6e1a2cca"
+source = "git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique#4c73da17e6daa3893a38649d8324259c4669ac80"
 dependencies = [
  "alloy-provider",
  "alloy-rlp",
@@ -5612,7 +5741,7 @@ dependencies = [
  "reth-storage-errors",
  "reth-trie",
  "revm-primitives",
- "rsp-primitives 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
+ "rsp-primitives 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
  "thiserror",
  "tokio",
  "tracing",
@@ -5641,34 +5770,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "rsp-script"
-version = "0.1.0"
-dependencies = [
- "alloy-provider",
- "bincode",
- "clap",
- "dotenv",
- "eyre",
- "reth-primitives",
- "rsp-client-executor 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "rsp-host-executor",
- "serde",
- "serde_json",
- "sp1-build",
- "sp1-sdk",
- "tokio",
- "url",
-]
-
-[[package]]
 name = "rsp-witness-db"
 version = "0.1.0"
-source = "git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver#ab900d040145cb36c2df6aa872c89b0a6e1a2cca"
+source = "git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique#4c73da17e6daa3893a38649d8324259c4669ac80"
 dependencies = [
  "reth-primitives",
  "reth-storage-errors",
  "revm-primitives",
- "rsp-primitives 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
+ "rsp-primitives 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
  "serde",
 ]
 
@@ -6137,7 +6246,7 @@ dependencies = [
 [[package]]
 name = "sha2"
 version = "0.10.8"
-source = "git+https://github.com/sp1-patches/RustCrypto-hashes.git?branch=patch-v0.10.8#1f224388fdede7cef649bce0d63876d1a9e3f515"
+source = "git+https://github.com/sp1-patches/RustCrypto-hashes?branch=patch-sha2-v0.10.8#1f224388fdede7cef649bce0d63876d1a9e3f515"
 dependencies = [
  "cfg-if",
  "cpufeatures",
@@ -6147,8 +6256,7 @@ dependencies = [
 [[package]]
 name = "sha3"
 version = "0.10.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75872d278a8f37ef87fa0ddbda7802605cb18344497949862c0d4dcb291eba60"
+source = "git+https://github.com/sp1-patches/RustCrypto-hashes?branch=patch-sha3-v0.10.8#8f6d303c0861ba7e5adcc36207c0f41fe5edaabc"
 dependencies = [
  "digest 0.10.7",
  "keccak",
@@ -6196,15 +6304,6 @@ checksum = "77549399552de45a898a580c1b41d445bf730df867cc44e6c0233bbc4b8329de"
 dependencies = [
  "digest 0.10.7",
  "rand_core",
-]
-
-[[package]]
-name = "simple-block"
-version = "1.1.0"
-dependencies = [
- "bincode",
- "rsp-client-executor 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "sp1-zkvm",
 ]
 
 [[package]]
@@ -6516,6 +6615,19 @@ name = "sp1-lib"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "413956de14568d7fb462213b9505ad4607d75c875301b9eca567cfb2e58eaac1"
+dependencies = [
+ "anyhow",
+ "bincode",
+ "cfg-if",
+ "hex",
+ "serde",
+ "snowbridge-amcl",
+]
+
+[[package]]
+name = "sp1-lib"
+version = "2.0.0"
+source = "git+https://github.com/succinctlabs/sp1.git?branch=dev#62ff82c8e86f533b3b64eb4cf82a325bb721e3c6"
 dependencies = [
  "anyhow",
  "bincode",
@@ -6880,7 +6992,7 @@ dependencies = [
  "rand",
  "serde",
  "sha2",
- "sp1-lib 2.0.0",
+ "sp1-lib 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "sp1-primitives",
 ]
 
@@ -6974,14 +7086,16 @@ dependencies = [
 [[package]]
 name = "substrate-bn"
 version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72b5bbfa79abbae15dd642ea8176a21a635ff3c00059961d1ea27ad04e5b441c"
+source = "git+https://github.com/sp1-patches/bn?branch=patch-v0.6.0#7e23021327f23798f3e6601d383d3fb5f4c7834b"
 dependencies = [
+ "bytemuck",
  "byteorder",
+ "cfg-if",
  "crunchy",
  "lazy_static",
  "rand",
  "rustc-hex",
+ "sp1-lib 2.0.0 (git+https://github.com/succinctlabs/sp1.git?branch=dev)",
 ]
 
 [[package]]
@@ -7231,9 +7345,9 @@ dependencies = [
 [[package]]
 name = "tiny-keccak"
 version = "2.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c9d3793400a45f954c52e73d068316d76b6f4e36977e3fcebb13a2721e80237"
+source = "git+https://github.com/sp1-patches/tiny-keccak?branch=patch-v2.0.2#bf0b28f63510a90c7b6c21ac6ff461c93ecd2331"
 dependencies = [
+ "cfg-if",
  "crunchy",
 ]
 
@@ -7592,44 +7706,6 @@ name = "unicode-xid"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ebc1c04c71510c7f702b52b7c350734c9ff1295c464a03335b00bb84fc54f853"
-
-[[package]]
-name = "uniswap"
-version = "1.1.0"
-dependencies = [
- "alloy",
- "alloy-primitives 0.8.5",
- "alloy-provider",
- "alloy-rpc-types",
- "alloy-sol-macro 0.8.5",
- "alloy-sol-types 0.8.5",
- "bincode",
- "dotenv",
- "eyre",
- "revm",
- "rsp-rpc-db 0.1.0 (git+https://github.com/xJonathanLEI/rsp?branch=fix/revm_semver)",
- "serde",
- "serde_json",
- "sp1-build",
- "sp1-cc-client-executor",
- "sp1-cc-host-executor",
- "sp1-sdk",
- "tokio",
- "url",
-]
-
-[[package]]
-name = "uniswap-client"
-version = "0.0.0"
-dependencies = [
- "alloy-primitives 0.8.5",
- "alloy-sol-macro 0.8.5",
- "alloy-sol-types 0.8.5",
- "bincode",
- "revm",
- "sp1-cc-client-executor",
- "sp1-zkvm",
-]
 
 [[package]]
 name = "untrusted"
@@ -8216,3 +8292,18 @@ dependencies = [
  "sha3",
  "subtle",
 ]
+
+[[patch.unused]]
+name = "sha2"
+version = "0.10.6"
+source = "git+https://github.com/sp1-patches/RustCrypto-hashes?branch=patch-sha2-v0.10.6#e5f8b7eaaa9801503bd998932a52b65848eee234"
+
+[[patch.unused]]
+name = "sha2"
+version = "0.9.8"
+source = "git+https://github.com/sp1-patches/RustCrypto-hashes?branch=patch-sha2-v0.9.8#afdbfb09c325f8a69c01d540ec9a261e3637725d"
+
+[[patch.unused]]
+name = "sha3"
+version = "0.9.1"
+source = "git+https://github.com/sp1-patches/RustCrypto-hashes?branch=patch-sha3-v0.9.8#32aae43e242b19905d886f986479a2d9b4b98082"

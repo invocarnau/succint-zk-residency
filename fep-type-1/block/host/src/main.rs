@@ -58,9 +58,7 @@ async fn main() -> eyre::Result<()> {
     let host_executor = HostExecutor::new(provider);
     let variant = match provider_config.chain_id {
         CHAIN_ID_ETH_MAINNET => ChainVariant::Ethereum,
-        _ => {
-            eyre::bail!("unknown chain ID: {}", provider_config.chain_id);
-        }
+        _ => ChainVariant::CliqueShanghaiChainID,
     };
 
     // println!("ChainID: {:?}", provider_config.chain_id);
@@ -82,7 +80,11 @@ async fn main() -> eyre::Result<()> {
     // Write the block to the program's stdin.
     let mut stdin = SP1Stdin::new();
     let buffer = bincode::serialize(&client_input).unwrap();
+
+    // write cleintInput and chainId to stdin
     stdin.write_vec(buffer);
+    stdin.write(&provider_config.chain_id);
+
 
     // Only execute the program.
     let (mut public_values, execution_report) =
@@ -111,7 +113,7 @@ async fn main() -> eyre::Result<()> {
         println!("Proof generation finished.");
 
         save_fixture(vk.clone().bytes32(), &proof, args.block_number, provider_config.chain_id);
-
+        let fixture = read_fixture(args.block_number, provider_config.chain_id);
         client
             .verify(&proof, &vk)
             .expect("proof verification should succeed");

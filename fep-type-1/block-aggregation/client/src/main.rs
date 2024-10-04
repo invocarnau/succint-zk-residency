@@ -9,14 +9,13 @@ use bincode;
 
 pub fn main() {
     // Read the input.
+
+    // could pass just an array of blockhashes
     let input = sp1_zkvm::io::read::<BlockAggregationInput>();
 
     // Confirm that the blocks are sequential.
     assert!(!input.block_commits.is_empty());
-    assert_eq!(
-        input.prev_l2_block_hash,
-        input.block_commits[0].prev_block_hash
-    );
+
     input.block_commits.windows(2).for_each(|pair| {
         let (prev_block, block) = (&pair[0], &pair[1]);
         assert_eq!(prev_block.new_block_hash, block.prev_block_hash);
@@ -32,8 +31,9 @@ pub fn main() {
 
     // Commit the block aggregation proof.
     let block_aggregation_commit = BlockAggregationCommit {
-        prev_l2_block_hash: input.prev_l2_block_hash,
+        prev_l2_block_hash: input.block_commits[0].prev_block_hash,
         new_l2_block_hash: input.block_commits.last().unwrap().new_block_hash,
+        block_vkey: input.block_vkey,
     };
     sp1_zkvm::io::commit(&block_aggregation_commit);
 }

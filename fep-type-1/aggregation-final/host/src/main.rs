@@ -1,10 +1,8 @@
 use alloy_provider::ReqwestProvider;
 use clap::Parser;
-use reth_primitives::B256;
-use rsp_client_executor::{io::ClientExecutorInput, ChainVariant, CHAIN_ID_ETH_MAINNET};
+use rsp_client_executor::{ChainVariant, CHAIN_ID_ETH_MAINNET};
 use rsp_host_executor::HostExecutor;
 use sp1_sdk::{SP1Proof, HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWithPublicValues, SP1VerifyingKey};
-use std::path::PathBuf;
 mod cli;
 use cli::ProviderArgs;
 use url::Url;
@@ -105,7 +103,7 @@ async fn main() -> eyre::Result<()> {
     let (aggregation_pk,aggregation_vk) = client.setup(ELF_BLOCK_AGGREGATION);
     let (block_pk, block_vk) = client.setup(ELF_BLOCK);
     let (bridge_pk, bridge_vk) = client.setup(ELF_BRIDGE);
-    let (final_aggregation_pk, final_aggregation_vk) = client.setup(ELF_FINAL_AGGREGATION);
+    let (final_aggregation_pk, _) = client.setup(ELF_FINAL_AGGREGATION);
 
     // cargo run --release -- --chain-id 1 --block-number 6797425
     let initial_block_number = 6797425;//args.block_number;
@@ -291,7 +289,7 @@ async fn main() -> eyre::Result<()> {
 
     
     // Only execute the program.
-    let (mut public_values_final_aggregation, execution_report) =
+    let (_, execution_report) =
         client.execute(&final_aggregation_pk.elf, stdin_final_aggregation.clone()).run().unwrap();
     println!(
         "Finished executing the block in {} cycles",
@@ -307,10 +305,10 @@ async fn main() -> eyre::Result<()> {
 }
 
 
-/// Generate a `SP1CCProofFixture`, and save it as a json file.
-///
-/// This is useful for verifying the proof of contract call execution on chain.
-fn save_fixture(vkey: String, proof: &SP1ProofWithPublicValues) {
+// Generate a `SP1CCProofFixture`, and save it as a json file.
+//
+// This is useful for verifying the proof of contract call execution on chain.
+//fn save_fixture(vkey: String, proof: &SP1ProofWithPublicValues) {
     // let fixture = SP1CCProofFixture {
     //     vkey,
     //     public_values: format!("0x{}", hex::encode(proof.public_values.as_slice())),
@@ -324,4 +322,4 @@ fn save_fixture(vkey: String, proof: &SP1ProofWithPublicValues) {
     //     serde_json::to_string_pretty(&fixture).unwrap(),
     // )
     // .expect("failed to write fixture");
-}
+//}

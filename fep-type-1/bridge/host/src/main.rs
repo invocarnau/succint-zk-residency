@@ -5,17 +5,15 @@ use alloy_primitives::{address, Address};
 use alloy_provider::ReqwestProvider;
 use alloy_rpc_types::BlockNumberOrTag;
 use alloy_sol_macro::sol;
-use alloy_sol_types::{SolCall, SolValue};
-use serde::{Deserialize, Serialize};
-use sp1_cc_client_executor::{ClientExecutor, ContractInput, ContractPublicValues};
+use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::HostExecutor;
-use sp1_sdk::{utils, HashableKey, ProverClient, SP1ProofWithPublicValues, SP1Stdin};
+use sp1_sdk::{utils, ProverClient, SP1ProofWithPublicValues, SP1Stdin};
 use url::Url;
 mod cli;
 use cli::ProviderArgs;
 use clap::Parser;
 
-use polccint_lib::{BridgeCommit, BridgeInput, SP1CCProofFixture};
+use polccint_lib::{BridgeInput, SP1CCProofFixture};
 use polccint_lib::constants::CALLER;
 
 // try what happens if the calls revert?¿

@@ -3,7 +3,7 @@
 #![no_main]
 sp1_zkvm::entrypoint!(main);
 
-use polccint_lib::{BlockAggregationCommit, BlockAggregationInput, FinalAggregationInput};
+use polccint_lib::FinalAggregationInput;
 use sha2::{Digest,Sha256};
 use bincode;
 

@@ -18,3 +18,5 @@ pgo-data.profdata
 
 # Env
 .env
+
+**/l2data/**

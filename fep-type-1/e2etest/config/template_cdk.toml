@@ -11,7 +11,7 @@ URL = "http://test-fep-type1-l1:8545"
 
 [Log]
 Environment = "development" # "production" or "development"
-Level = "info"
+Level = "debug"
 Outputs = ["stderr"]
 
 [ReorgDetectorL1]

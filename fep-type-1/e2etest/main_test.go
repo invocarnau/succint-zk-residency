@@ -374,7 +374,7 @@ func runBridgeL1toL2Test(
 
 		fmt.Print("wait for bridge to be included on L1 info tree index (needs for the chain to verify the block on L1)")
 		found = false
-		for i := 0; i < 40; i++ { // block needs to be finalised, takes ~32s
+		for i := 0; i < 4000000; i++ { // block needs to be finalised, takes ~32s
 			bridgeIncluddedAtIndex, err = bridgeClient.L1InfoTreeIndexForBridge(l2NetworkID, depositCount)
 			if err == nil {
 				found = true

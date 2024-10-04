@@ -11,7 +11,7 @@ URL = "http://test-fep-type1-l1:8545"
 
 [Log]
 Environment = "development" # "production" or "development"
-Level = "info"
+Level = "debug"
 Outputs = ["stderr"]
 
 [ReorgDetectorL1]
@@ -37,7 +37,7 @@ URLRPCL1="http://test-fep-type1-l2:8545"
 BlockFinality="FinalizedBlock"
 WaitPeriodNextGER="1s"
 	[AggOracle.EVMSender]
-		GlobalExitRootL2="0xb9C7869F37C9474eBf7Ea2ccA9B5F69BF2C4264a"
+		GlobalExitRootL2="0x957e1e5C6d6A2CaEb25078a6B7ba95A9d41f1280"
 		URLRPCL2="http://test-fep-type1-l2:8545"
 		ChainIDL2=42069
 		GasOffset=0
@@ -75,7 +75,7 @@ MaxRequestsPerIPAndSecond = 10
 DBPath = "/tmp/claimsopnsor"
 Enabled = true
 SenderAddr = "0x976ea74026e726554db657fa54763abd0c3a0aa9"
-BridgeAddrL2 = "0xbE3DF0aB96D5c3b7cd8BAD17beFeEfA8a8f4A285"
+BridgeAddrL2 = "0x0e73C306E8416B14a428974B2b8f1F0d162299B2"
 MaxGas = 200000
 RetryAfterErrorPeriod = "1s"
 MaxRetryAttemptsAfterError = -1
@@ -123,7 +123,7 @@ WaitForNewBlocksPeriod = "3s"
 DBPath = "/tmp/bridgel2sync"
 BlockFinality = "LatestBlock"
 InitialBlockNum = 0
-BridgeAddr = "0xbE3DF0aB96D5c3b7cd8BAD17beFeEfA8a8f4A285"
+BridgeAddr = "0x0e73C306E8416B14a428974B2b8f1F0d162299B2"
 SyncBlockChunkSize = 100
 RetryAfterErrorPeriod = "1s"
 MaxRetryAttemptsAfterError = -1
@@ -133,7 +133,7 @@ WaitForNewBlocksPeriod = "3s"
 DBPath = "/tmp/lastgersync"
 BlockFinality = "LatestBlock"
 InitialBlockNum = 0
-GlobalExitRootL2Addr = "0xb9C7869F37C9474eBf7Ea2ccA9B5F69BF2C4264a"
+GlobalExitRootL2Addr = "0x957e1e5C6d6A2CaEb25078a6B7ba95A9d41f1280"
 RetryAfterErrorPeriod = "1s"
 MaxRetryAttemptsAfterError = -1
 WaitForNewBlocksPeriod = "1s"

@@ -61,6 +61,6 @@ services:
         rm -rf /tmp/data &&
         geth --datadir /tmp/data init /config/l2genesis.json && 
         cp /config/aggoracle.keystore /tmp/data/keystore/UTC--2024-10-02T21-39-30.816069000Z--70997970c51812dc3a010c7d01b50e0d17dc79c8 && 
-        geth --allow-insecure-unlock --http --http.api admin,eth,debug,miner,net,txpool,personal,web3,db --http.addr 0.0.0.0 --http.corsdomain "*" --http.vhosts "*" --networkid 42069 --unlock 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 --password /config/password --miner.etherbase 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 --miner.gasprice 20000000000 --txpool.pricelimit 20000000000 --mine --datadir /tmp/data
+        geth --allow-insecure-unlock --gcmode=archive --http --http.api admin,eth,debug,miner,net,txpool,personal,web3,db --http.addr 0.0.0.0 --http.corsdomain "*" --http.vhosts "*" --networkid 42069 --unlock 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 --password /config/password --miner.etherbase 0x70997970c51812dc3a010c7d01b50e0d17dc79c8 --miner.gasprice 20000000000 --txpool.pricelimit 20000000000 --mine --datadir /tmp/data
 
  

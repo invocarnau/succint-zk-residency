@@ -13,6 +13,7 @@ import (
 
 	"github.com/0xPolygon/cdk-contracts-tooling/contracts/banana/polygonzkevmbridgev2"
 	gerContractL1 "github.com/0xPolygon/cdk-contracts-tooling/contracts/banana/polygonzkevmglobalexitrootv2"
+	gerl2 "github.com/0xPolygon/cdk-contracts-tooling/contracts/sovereign/globalexitrootmanagerl2sovereignchain"
 	"github.com/0xPolygon/cdk/bridgesync"
 	"github.com/0xPolygon/cdk/claimsponsor"
 	"github.com/0xPolygon/cdk/l1infotreesync"
@@ -24,7 +25,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/invocarnau/succint-zk-residency/fep-type-1/e2etest/gerl2"
 	"github.com/invocarnau/succint-zk-residency/fep-type-1/e2etest/transparentupgradableproxy"
 	"github.com/stretchr/testify/require"
 )
@@ -97,7 +97,7 @@ func runL1(t *testing.T) (
 func runL2(t *testing.T, auth *bind.TransactOpts) (
 	*ethclient.Client,
 	common.Address,
-	*gerl2.Gerl2,
+	*gerl2.Globalexitrootmanagerl2sovereignchain,
 	common.Address,
 	*polygonzkevmbridgev2.Polygonzkevmbridgev2,
 ) {
@@ -196,7 +196,7 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 		}
 
 		// deploy GER
-		gerAddr, _, gerContract, err := gerl2.DeployGerl2(authDeployer, client, auth.From)
+		gerAddr, _, gerContract, err := gerl2.DeployGlobalexitrootmanagerl2sovereignchain(authDeployer, client, auth.From)
 		require.NoError(t, err)
 		time.Sleep(time.Second * 2)
 		fmt.Println("gerAddr ", gerAddr)
@@ -204,7 +204,7 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 
 		return client, gerAddr, gerContract, bridgeAddr, bridgeContract
 	} else {
-		gerContract, err := gerl2.NewGerl2(gerAddrL2AlreadyDeployed, client)
+		gerContract, err := gerl2.NewGlobalexitrootmanagerl2sovereignchain(gerAddrL2AlreadyDeployed, client)
 		require.NoError(t, err)
 		bridgeContract, err := polygonzkevmbridgev2.NewPolygonzkevmbridgev2(bridgeAddrL2AlreadyDeployed, client)
 		require.NoError(t, err)

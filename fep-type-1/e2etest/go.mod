@@ -6,7 +6,7 @@ toolchain go1.22.8
 
 require (
 	github.com/0xPolygon/cdk v0.1.2
-	github.com/0xPolygon/cdk-contracts-tooling v0.0.0-20240826154954-f6182d2b17a2
+	github.com/0xPolygon/cdk-contracts-tooling v0.0.0-20241003024835-ffbfc9fc5db2
 	github.com/ethereum/go-ethereum v1.14.11
 	github.com/stretchr/testify v1.9.0
 )

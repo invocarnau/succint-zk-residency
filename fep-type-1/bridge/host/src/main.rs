@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use alloy::hex;
 use alloy_primitives::{address, Address};
@@ -28,10 +29,6 @@ sol! (
     }
 );
 
-/// Agg Layer contract
-const CONTRACT_GER_L1: Address = address!("0506B9383477F682DDB3701CD43eD30B9958099b");
-const CONTRACT_GER_L2: Address = address!("0506B9383477F682DDB3701CD43eD30B9958099b");
-
 /// The ELF we want to execute inside the zkVM.
 const ELF: &[u8] = include_bytes!("../../../../elf/bridge");
 
@@ -58,13 +55,38 @@ fn save_fixture(vkey: String, proof: &SP1ProofWithPublicValues) {
 
 #[derive(Parser, Debug)]
 struct Args {
-    /// The block number of the block to execute.
-    #[clap(flatten)]
-    provider: ProviderArgs,
 
     /// Whether or not to generate a proof.
     #[arg(long, default_value_t = false)]
     prove: bool,
+
+    /// The chain ID. If not provided, requires the rpc_url argument to be provided.
+    #[clap(long)]
+    chain_id_l1: Option<u64>,
+
+    /// The chain ID. If not provided, requires the rpc_url argument to be provided.
+    #[clap(long)]
+    chain_id_l2: Option<u64>,
+
+    /// The chain ID. If not provided, requires the rpc_url argument to be provided.
+    #[clap(long)]
+    block_number_initial: Option<u64>,
+
+    /// The chain ID. If not provided, requires the rpc_url argument to be provided.
+    #[clap(long)]
+    block_number_final: Option<u64>,
+
+     /// The contract address for GER on L1.
+     #[clap(long)]
+     contract_ger_l1: String,
+ 
+     /// The contract address for GER on L2.
+     #[clap(long)]
+     contract_ger_l2: String,
+
+    /// The hex bytes for imported GERs.
+    #[clap(long)]
+    imported_gers_hex: String,
 }
 
 #[tokio::main]
@@ -78,48 +100,69 @@ async fn main() -> eyre::Result<()> {
     // Parse the command line arguments.
     let args = Args::parse();
 
+
+    // Convert the contract addresses from strings to Address type
+    let contract_ger_l1: Address = Address::from_str(&args.contract_ger_l1).expect("Invalid address");
+    let contract_ger_l2: Address = Address::from_str(&args.contract_ger_l2).expect("Invalid address");
+    
     // load imported gers
-    let imported_gers: Vec<alloy_primitives::FixedBytes<32>> = vec![
+    // let imported_gers: Vec<alloy_primitives::FixedBytes<32>> = vec![
+    //     alloy_primitives::FixedBytes::from_slice(
+    //         &hex::decode("b00b00b000b00b00b00b00b00b00b000b00b00b00b00b000b00b00b00b00b00b").unwrap()
+    //     )
+    // ];
+    
+   let imported_gers: Vec<alloy_primitives::FixedBytes<32>> = vec![
         alloy_primitives::FixedBytes::from_slice(
-            &hex::decode("b00b00b000b00b00b00b00b00b00b000b00b00b00b00b000b00b00b00b00b00b").unwrap()
+            &hex::decode(&args.imported_gers_hex).unwrap()
         )
     ];
-    
     // Load the input from the cache.
     // TODO return differnet providers
-    let provider_config = args.provider.into_provider().await?;
-    let rpc_url: Url = provider_config.rpc_url.expect("URL must be defined");
+    let rpc_url_l1 = std::env::var(format!("RPC_{}", args.chain_id_l1.unwrap_or_default()))
+    .expect("RPC URL must be defined")
+    .parse::<Url>()
+    .expect("Invalid URL format");
 
-    let block_number_initial = BlockNumberOrTag::Number(6797411);
-    let block_number_final = BlockNumberOrTag::Number(6797428);
+    let rpc_url_l2 = std::env::var(format!("RPC_{}", args.chain_id_l2.unwrap_or_default()))
+    .expect("RPC URL must be defined")
+    .parse::<Url>()
+    .expect("Invalid URL format");
+
+    let block_number_initial = BlockNumberOrTag::Number(args.block_number_initial.unwrap_or_default() - 1);
+    let block_number_final = BlockNumberOrTag::Number(args.block_number_final.unwrap_or_default());
 
      // 1. Get the the last injecter GER of the previous block on L2
 
     // Setup the provider and host executor for initial GER
-    let provider = ReqwestProvider::new_http(rpc_url);
-    let mut executor_injected_ger_count = HostExecutor::new(provider.clone(), block_number_initial).await?;
+    let provider_l1 = ReqwestProvider::new_http(rpc_url_l1);
+    let provider_l2 = ReqwestProvider::new_http(rpc_url_l2);
+
+    let mut executor_injected_ger_count = HostExecutor::new(provider_l2.clone(), block_number_initial).await?;
 
     // Make the call to the slot0 function.
+    println!("Calling injectedGERCount on L2");
     let injected_ger_count = executor_injected_ger_count
         .execute(ContractInput {
-            contract_address: CONTRACT_GER_L2,
-            caller_address: CALLER,
+            contract_address: contract_ger_l2,
+            caller_address:  address!("70997970c51812dc3a010c7d01b50e0d17dc79c8"),
             calldata: GlobalExitRootManagerL2SovereignChain::injectedGERCountCall {},
         })
         .await?
         .injectedGerCount;
 
     // Now that we've executed all of the calls, get the `EVMStateSketch` from the host executor.
+    println!("Getting injectedGERCount sketch");
     let executor_injected_ger_count_sketch = executor_injected_ger_count.finalize().await?;
 
     // 2. Check that the GERs are consecutive on L2 at the new block
     let mut executor_check_injected_gers_and_return_ler = 
-        HostExecutor::new(provider.clone(), block_number_final).await?;
+        HostExecutor::new(provider_l2.clone(), block_number_final).await?;
 
     // Make the call to the slot0 function.
     let check_injected_gers_and_return_ler_call_output_decoded = executor_check_injected_gers_and_return_ler
         .execute(ContractInput {
-            contract_address: CONTRACT_GER_L2,
+            contract_address: contract_ger_l2,
             caller_address: CALLER,
             calldata: GlobalExitRootManagerL2SovereignChain::checkInjectedGERsAndReturnLERCall { 
                 previousInjectedGERCount: injected_ger_count, 
@@ -136,12 +179,12 @@ async fn main() -> eyre::Result<()> {
 
     // 3. Check that the GERs exist on L1
     let mut executor_check_gers_existance =
-     HostExecutor::new(provider.clone(), block_number_final).await?;
+     HostExecutor::new(provider_l1.clone(), block_number_final).await?;
 
     // Make the call to the slot0 function.
     let check_injected_gers_existance_decoded = executor_check_gers_existance
         .execute(ContractInput {
-            contract_address: CONTRACT_GER_L1,
+            contract_address: contract_ger_l1,
             caller_address: CALLER,
             calldata: GlobalExitRootScrapper::checkGERsExistanceCall { globalExitRoots: imported_gers.clone() },
         })
@@ -157,8 +200,8 @@ async fn main() -> eyre::Result<()> {
 
      // Commit the bridge proof.
      let bridge_input: BridgeInput = BridgeInput {
-        l1_ger_addr: CONTRACT_GER_L1,
-        l2_ger_addr: CONTRACT_GER_L2,
+        l1_ger_addr: contract_ger_l1,
+        l2_ger_addr: contract_ger_l2,
         injected_gers: imported_gers,
         injected_ger_count_sketch: executor_injected_ger_count_sketch.clone(),
         check_injected_gers_and_return_ler_sketch: executor_check_injected_gers_and_return_ler_sketch.clone(),
@@ -171,20 +214,25 @@ async fn main() -> eyre::Result<()> {
 
     // Execute the program using the `ProverClient.execute` method, without generating a proof.
     let client = ProverClient::new();
+    // Setup the proving key and verification key.
+    let (pk, vk) = client.setup(ELF);
+
     let (_, report) = client.execute(ELF, stdin.clone()).run().unwrap();
     println!("executed program with {} cycles", report.total_instruction_count());
 
-    // // Generate the proof for the given program and input.
-    // let (pk, vk) = client.setup(ELF);
-    // let proof = client.prove(&pk, stdin).plonk().run().unwrap();
-    // println!("generated proof");
+    if args.prove {
+        println!("Starting proof generation.");
+        let proof: SP1ProofWithPublicValues = client.prove(&pk, stdin.clone()).compressed().run().expect("Proving should work.");
+        println!("Proof generation finished.");
 
-    // // Save the proof, public values, and vkey to a json file.
-    // save_fixture(vk.bytes32(), &proof);
-    // println!("saved proof to plonk-fixture.json");
+        client.verify(&proof, &vk).expect("proof verification should succeed");
+        // Handle the result of the save operation
+        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../proof/chain{}/bridge_block_{}_to_{}_proof.bin", args.chain_id_l2.unwrap(), args.block_number_initial.unwrap(), args.block_number_final.unwrap()))) {
+            Ok(_) => println!("Proof saved successfully."),
+            Err(e) => eprintln!("Failed to save proof: {}", e),
+        }
 
-    // // Verify proof and public values.
-    // client.verify(&proof, &vk).expect("verification failed");
-    // println!("successfully generated and verified proof for the program!");
+        println!("Starting proof generation.");
+    }
     Ok(())
 }

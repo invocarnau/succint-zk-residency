@@ -1,6 +1,6 @@
 use alloy_provider::ReqwestProvider;
 use clap::Parser;
-use rsp_client_executor::{ChainVariant, CHAIN_ID_ETH_MAINNET};
+use rsp_client_executor::{io::WitnessInput, ChainVariant, CHAIN_ID_ETH_MAINNET};
 use rsp_host_executor::HostExecutor;
 use sp1_sdk::{HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWithPublicValues};
 use std::path::PathBuf;
@@ -61,6 +61,15 @@ async fn main() -> eyre::Result<()> {
         _ => ChainVariant::CliqueShanghaiChainID,
     };
 
+    // Construct the path for saving the proof
+    let proof_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join(format!("../../proof/chain{}/block_{}_proof.bin", provider_config.chain_id, args.block_number));
+
+    // Create all necessary directories
+    if let Some(parent) = proof_path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+
     // println!("ChainID: {:?}", provider_config.chain_id);
     // println!("Executing block number: {:?}", args.block_number);
 
@@ -68,6 +77,9 @@ async fn main() -> eyre::Result<()> {
         .execute(args.block_number, variant)
         .await
         .expect("failed to execute host");
+
+    println!("{:?}", client_input.current_block.parent_hash);
+    println!("{:?}", client_input.current_block.hash_slow());
 
     //let client_input = load_input_from_cache(CHAIN_ID_ETH_MAINNET, 20526624);
 
@@ -99,51 +111,32 @@ async fn main() -> eyre::Result<()> {
     // Assert outputs
     // Check that the check was successful
     assert_eq!(decoded_public_values.prev_block_hash, client_input.parent_header().hash_slow());
-    assert_eq!(decoded_public_values.new_block_hash, client_input.current_block.hash_slow());
+    assert_eq!(decoded_public_values.new_block_hash, client_input.current_block.header.hash_slow());
 
     // If the `prove` argument was passed in, actually generate the proof.
     // It is strongly recommended you use the network prover given the size of these programs.
     if args.prove {
         println!("Starting proof generation.");
-        let proof: SP1ProofWithPublicValues = client
-            .prove(&pk, stdin)
-            .compressed()
-            .run()
-            .expect("Proving should work.");
+        let proof: SP1ProofWithPublicValues = client.prove(&pk, stdin.clone()).compressed().run().expect("Proving should work.");
         println!("Proof generation finished.");
 
-        save_fixture(vk.clone().bytes32(), &proof, args.block_number, provider_config.chain_id);
-        let fixture = read_fixture(args.block_number, provider_config.chain_id);
-        client
-            .verify(&proof, &vk)
-            .expect("proof verification should succeed");
+        client.verify(&proof, &vk).expect("proof verification should succeed");
+        // Handle the result of the save operation
+        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../proof/chain{}/block_{}_proof.bin", provider_config.chain_id, args.block_number))) {
+            Ok(_) => println!("Proof saved successfully."),
+            Err(e) => eprintln!("Failed to save proof: {}", e),
+        }
+
+        println!("Starting proof generation.");
+        // let proof: SP1ProofWithPublicValues = client.prove(&pk, stdin.clone()).compressed().run().expect("Proving should work.");
+        // println!("Proof generation finished.");
+        // println!("{:?}", proof);
+
+        // client.verify(&proof, &vk).expect("proof verification should succeed");
+
+        // save_fixture(vk.clone().bytes32(), &proof, args.block_number, provider_config.chain_id);
+        // let fixture = read_fixture(args.block_number, provider_config.chain_id);
+
     }
     Ok(())
-}
-
-/// Generate a `SP1CCProofFixture`, and save it as a json file.
-///
-/// This is useful for verifying the proof of contract call execution on chain.
-fn save_fixture(vkey: String, proof: &SP1ProofWithPublicValues, block_number: u64, chain_id: u64) {
-    let fixture = SP1CCProofFixture {
-        vkey,
-        public_values: format!("0x{}", hex::encode(proof.public_values.as_slice())),
-        proof: format!("0x{}", hex::encode(proof.bytes())),
-    };
-
-    let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../proof/chain{}/block_{}_proof_fixture.jso", chain_id, block_number));
-    std::fs::create_dir_all(&fixture_path).expect("failed to create fixture path");
-    std::fs::write(
-        fixture_path.join("plonk-fixture.json".to_lowercase()),
-        serde_json::to_string_pretty(&fixture).unwrap(),
-    )
-    .expect("failed to write fixture");
-}
-
-fn read_fixture(block_number: u64, chain_id: u64) -> SP1CCProofFixture {
-    let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../proof/chain{}/block_{}_proof_fixture.json", chain_id, block_number));
-    let mut file = std::fs::File::open(fixture_path).expect("failed to open fixture file");
-    let mut contents = String::new();
-    file.read_to_string(&mut contents).expect("failed to read fixture file");
-    serde_json::from_str(&contents).expect("failed to deserialize fixture")
 }

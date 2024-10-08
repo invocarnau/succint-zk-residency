@@ -25,5 +25,8 @@
     - `rollupManagerAddrL1` -> `polygonRollupManagerAddress` @ `deployment/v2/deploy_output.json`
     - `rollupAddrL1` -> `rollupAddress` @ `deployment/v2/create_rollup_output.json`
 4. Run the test (from `op/e2etest`): `go test -v -count=1 ./main_test.go`
+5. Edit `op/e2etest/main.go` with the info from `.devnet/addresses.json` of the `optimism` repo:
+    - `disputeGameFactoryProxyAddr` -> `DisputeGameFactoryProxy`
+6. Run the script to get info about the settlement: `go run .` (from `op/e2etest`)
 
 In order to stop the running containers, from the `optimism` repo run: `make devnet-down`

@@ -30,3 +30,4 @@ gen() {
 gen multigerassertor
 gen gerl2
 gen bridgel2
+gen opfaultdisputegame

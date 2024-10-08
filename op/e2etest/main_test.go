@@ -1,4 +1,4 @@
-package testaggoracle
+package main
 
 import (
 	"context"
@@ -35,8 +35,6 @@ const (
 	l2BlockTime     = 2
 	l1BlockTime     = 6
 	l2NetworkID     = uint32(1)
-	l1URL           = "http://localhost:8545"
-	l2URL           = "http://localhost:9545"
 	cdkURL          = "http://localhost:5576"
 	alreadyDeployed = false
 )
@@ -420,4 +418,8 @@ func runBridgeL1toL2Test(
 		time.Sleep(time.Second * l1BlockTime)
 		fmt.Println("claim tx mined on L1")
 	}
+}
+
+func TestDebugMain(t *testing.T) {
+	main()
 }

@@ -78,7 +78,7 @@ async fn main() -> eyre::Result<()> {
     let (block_pk, block_vk) = client.setup(ELF_BLOCK);
 
     let initial_block_number = args.block_number;
-    let block_range = 2; // hardcode for now TODO
+    let block_range = 1; // hardcode for now TODO
     let final_block_number = initial_block_number + block_range;
 
     let mut inputs: Vec<AggregationInput> = Vec::new();
@@ -107,7 +107,7 @@ async fn main() -> eyre::Result<()> {
     //     );
     // }
 
-    for block_number in initial_block_number..final_block_number {
+    for block_number in initial_block_number..final_block_number + 1 {
         let proof: SP1ProofWithPublicValues = SP1ProofWithPublicValues::load(
             PathBuf::from(env!("CARGO_MANIFEST_DIR"))
                 .join(format!(

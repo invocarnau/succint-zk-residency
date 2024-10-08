@@ -9,3 +9,4 @@ rsp-client-executor.workspace = true
 sp1-cc-client-executor.workspace = true
 alloy-primitives.workspace = true
 serde.workspace = true
+alloy-sol-types.workspace = true

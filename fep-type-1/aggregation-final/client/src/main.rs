@@ -6,6 +6,9 @@ sp1_zkvm::entrypoint!(main);
 use polccint_lib::FinalAggregationInput;
 use sha2::{Digest,Sha256};
 use bincode;
+use polccint_lib::PublicValuesFinalAggregationSolidity;
+use alloy_sol_types::SolType;
+use alloy_primitives::FixedBytes;
 
 pub fn main() {
     // Read the input.
@@ -33,6 +36,20 @@ pub fn main() {
         &public_values_digest_bridge.into()
     );
 
+    let public_values_solidity: PublicValuesFinalAggregationSolidity = PublicValuesFinalAggregationSolidity {
+        block_vkey_aggregation: FixedBytes::<32>::from_slice(input.block_vkey_aggregation.iter().flat_map(|&x| x.to_be_bytes()).collect::<Vec<u8>>().as_slice()),
+        block_vkey: FixedBytes::<32>::from_slice(input.block_aggregation_commit.block_vkey.iter().flat_map(|&x| x.to_be_bytes()).collect::<Vec<u8>>().as_slice()),
+        block_vkey_bridge: FixedBytes::<32>::from_slice(input.block_vkey_bridge.iter().flat_map(|&x| x.to_be_bytes()).collect::<Vec<u8>>().as_slice()),
+        prev_l2_block_hash: input.bridge_commit.prev_l2_block_hash,
+        new_l2_block_hash: input.bridge_commit.new_l2_block_hash,
+        l1_block_hash: input.bridge_commit.l1_block_hash,
+        new_ler: input.bridge_commit.new_ler,
+        l1_ger_addr: input.bridge_commit.l1_ger_addr,
+        l2_ger_addr: input.bridge_commit.l2_ger_addr, 
+    };
+
+    let public_values_solidity_encoded = PublicValuesFinalAggregationSolidity::abi_encode(&public_values_solidity);
+
     // Commit the full input, could be optimized
-    sp1_zkvm::io::commit(&input);
+    sp1_zkvm::io::commit(&public_values_solidity_encoded);
 }

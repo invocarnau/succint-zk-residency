@@ -53,6 +53,8 @@ dependencies = [
 name = "aggregation-final-client"
 version = "1.1.0"
 dependencies = [
+ "alloy-primitives 0.8.5",
+ "alloy-sol-types 0.8.5",
  "bincode",
  "polccint-lib",
  "sha2",
@@ -4444,6 +4446,7 @@ name = "polccint-lib"
 version = "1.1.0"
 dependencies = [
  "alloy-primitives 0.8.5",
+ "alloy-sol-types 0.8.5",
  "rsp-client-executor 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
  "serde",
  "sp1-cc-client-executor",

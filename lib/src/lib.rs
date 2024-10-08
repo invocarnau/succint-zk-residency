@@ -1,6 +1,8 @@
 use alloy_primitives::{B256, Address};
 use sp1_cc_client_executor::io::EVMStateSketch;
 use serde::{Deserialize, Serialize};
+use alloy_sol_types::sol;
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BlockCommit {
@@ -61,3 +63,19 @@ pub struct SP1CCProofFixture {
 }
 
 pub mod constants;
+
+
+sol! {
+    /// The public values encoded as a struct that can be easily deserialized inside Solidity.
+    struct PublicValuesFinalAggregationSolidity {
+        bytes32 block_vkey_aggregation;
+        bytes32 block_vkey;
+        bytes32 block_vkey_bridge; 
+        bytes32 prev_l2_block_hash;
+        bytes32 new_l2_block_hash;
+        bytes32 l1_block_hash;
+        bytes32 new_ler;
+        address l1_ger_addr;
+        address l2_ger_addr;   
+    }
+}

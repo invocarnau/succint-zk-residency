@@ -42,7 +42,7 @@ var (
 	gerAddrL2AlreadyDeployed    = common.HexToAddress("0x8058D80131e6F57E99830Dce403BBAF4e64C9b8A")
 	bridgeAddrL2AlreadyDeployed = common.HexToAddress("0xb0a5546A0Efd8950D8964a9dB66DFF5569EEfDE7")
 	gerAddrL1                   = common.HexToAddress("0x8A791620dd6260079BF849Dc5567aDC3F2FdC318")
-	bridgeAddrL1                = common.HexToAddress(("0xFe12ABaa190Ef0c8638Ee0ba9F828BF41368Ca0E"))
+	bridgeAddrL1                = common.HexToAddress(("0xAbbeC0792bb8639B2a64Cc895bBcf5E6CC427c41"))
 )
 
 func TestBridgeEVM(t *testing.T) {

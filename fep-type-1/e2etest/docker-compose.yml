@@ -25,7 +25,7 @@ services:
 
   test-fep-type1-l1:
     container_name: test-fep-type1-l1
-    image: hermeznetwork/geth-zkevm-contracts:elderberry-fork.9-geth1.13.11
+    image: hermeznetwork/geth-zkevm-contracts
     environment:
       - DEV_PERIOD
     ports:
@@ -44,6 +44,9 @@ services:
       - "1"
       - "--datadir"
       - "/geth_data"
+      - --gcmode=archive
+      - --http.api
+      - admin,eth,debug,miner,net,txpool,personal,web3,db
 
   test-fep-type1-l2:
     container_name: test-fep-type1-l2

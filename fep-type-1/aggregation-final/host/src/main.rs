@@ -72,6 +72,8 @@ async fn main() -> eyre::Result<()> {
     let (bridge_pk, bridge_vk) = client.setup(ELF_BRIDGE);
     let (final_aggregation_pk, final_aggregation_vk) = client.setup(ELF_FINAL_AGGREGATION);
 
+    // print all vkeys in hex format
+
     let initial_block_number = args.block_number;
     let block_range = 1; // hardcode for now TODO
     let final_block_number = initial_block_number + block_range;
@@ -91,7 +93,7 @@ async fn main() -> eyre::Result<()> {
     println!("proof_aggregation: {:?}", proof_aggregation.public_values.clone().read::<BlockAggregationCommit>());
 
 
-      // encode aggregation input and write to stdin
+    // encode aggregation input and write to stdin
     let mut stdin_final_aggregation = SP1Stdin::new();
     let final_aggregation_input: FinalAggregationInput = FinalAggregationInput {
         block_vkey_aggregation: aggregation_vk.clone().hash_u32(),
@@ -106,12 +108,17 @@ async fn main() -> eyre::Result<()> {
         panic!()
     };
     stdin_final_aggregation.write_proof(proof, aggregation_vk.vk);
+    println!(
+      "Finished writing proof",
+    );
 
     let SP1Proof::Compressed(proof) = proof_bridge.proof else {
         panic!()
     };
     stdin_final_aggregation.write_proof(proof, bridge_vk.vk);
-
+    println!(
+        "Finished writing proof",
+      );
     
     // Only execute the program.
     let (_, execution_report) =
@@ -134,16 +141,17 @@ async fn main() -> eyre::Result<()> {
         }
 
         let public_values_solidity_encoded = proof.public_values.as_slice();
-        let decoded_values = PublicValuesFinalAggregationSolidity::abi_decode(public_values_solidity_encoded, false).unwrap();
+        println!("public valiues in scirpt {:?}", hex::encode(public_values_solidity_encoded));
+        let decoded_values = PublicValuesFinalAggregationSolidity::abi_decode(public_values_solidity_encoded, true).unwrap();
 
         println!("Decoded public values:");
-        println!("block_vkey_aggregation: 0x{}", hex::encode(decoded_values.block_vkey_aggregation));
-        println!("block_vkey: 0x{}", hex::encode(decoded_values.block_vkey));
-        println!("block_vkey_bridge: 0x{}", hex::encode(decoded_values.block_vkey_bridge));
-        println!("prev_l2_block_hash: 0x{}", hex::encode(decoded_values.prev_l2_block_hash));
-        println!("new_l2_block_hash: 0x{}", hex::encode(decoded_values.new_l2_block_hash));
-        println!("l1_block_hash: 0x{}", hex::encode(decoded_values.l1_block_hash));
-        println!("new_ler: 0x{}", hex::encode(decoded_values.new_ler));
+        println!("block_vkey_aggregation: 0x{}", (decoded_values.block_vkey_aggregation));
+        println!("block_vkey: 0x{}", (decoded_values.block_vkey));
+        println!("block_vkey_bridge: 0x{}", (decoded_values.block_vkey_bridge));
+        println!("prev_l2_block_hash: 0x{}", decoded_values.prev_l2_block_hash);
+        println!("new_l2_block_hash: 0x{}", decoded_values.new_l2_block_hash);
+        println!("l1_block_hash: 0x{}", decoded_values.l1_block_hash);
+        println!("new_ler: 0x{}", decoded_values.new_ler);
         println!("l1_ger_addr: {}", decoded_values.l1_ger_addr);
         println!("l2_ger_addr: {}", decoded_values.l2_ger_addr);
     }

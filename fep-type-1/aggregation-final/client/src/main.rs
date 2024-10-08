@@ -51,5 +51,5 @@ pub fn main() {
     let public_values_solidity_encoded = PublicValuesFinalAggregationSolidity::abi_encode(&public_values_solidity);
 
     // Commit the full input, could be optimized
-    sp1_zkvm::io::commit(&public_values_solidity_encoded);
+    sp1_zkvm::io::commit_slice(&public_values_solidity_encoded);
 }

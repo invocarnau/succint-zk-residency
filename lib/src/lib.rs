@@ -66,7 +66,7 @@ pub mod constants;
 
 
 sol! {
-    /// The public values encoded as a struct that can be easily deserialized inside Solidity.
+    #[derive(Debug, Serialize, Deserialize)]
     struct PublicValuesFinalAggregationSolidity {
         bytes32 block_vkey_aggregation;
         bytes32 block_vkey;

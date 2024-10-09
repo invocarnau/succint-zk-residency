@@ -6,7 +6,7 @@ use sp1_sdk::{SP1Proof, HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWith
 mod cli;
 use cli::ProviderArgs;
 use url::Url;
-use polccint_lib::{BridgeCommit, BlockCommit, BlockAggregationInput, BlockAggregationCommit, BridgeInput, FinalAggregationInput};
+use polccint_lib::{BridgeCommit, BlockCommit, BlockAggregationInput, BlockAggregationCommit, FinalAggregationInput, u32_array_to_hex};
 use alloy_rpc_types::BlockNumberOrTag;
 use alloy_primitives::{address, Address};
 use alloy::hex;
@@ -15,6 +15,8 @@ use sp1_cc_client_executor::{ContractInput};
 use std::path::PathBuf;
 use polccint_lib::PublicValuesFinalAggregationSolidity;
 use alloy_sol_types::SolType;
+// import constants from lib
+use polccint_lib::constants::{BRIDGE_VK, AGGREGATION_VK};
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -29,8 +31,6 @@ struct Args {
     prove: bool,
 }
 
-
-const ELF_BLOCK: &[u8] = include_bytes!("../../../../elf/block");
 const ELF_BLOCK_AGGREGATION: &[u8] = include_bytes!("../../../../elf/block-aggregation");
 const ELF_BRIDGE: &[u8] = include_bytes!("../../../../elf/bridge");
 const ELF_FINAL_AGGREGATION: &[u8] = include_bytes!("../../../../elf/aggregation-final");
@@ -68,15 +68,16 @@ async fn main() -> eyre::Result<()> {
 
     // Setup the proving and verifying keys.
     let (aggregation_pk,aggregation_vk) = client.setup(ELF_BLOCK_AGGREGATION);
-    let (block_pk, block_vk) = client.setup(ELF_BLOCK);
     let (bridge_pk, bridge_vk) = client.setup(ELF_BRIDGE);
     let (final_aggregation_pk, final_aggregation_vk) = client.setup(ELF_FINAL_AGGREGATION);
-
-    // print all vkeys in hex format
 
     let initial_block_number = args.block_number;
     let block_range = 1; // hardcode for now TODO
     let final_block_number = initial_block_number + block_range;
+
+    // assert constant vk with elf vk 
+    assert!(bridge_vk.bytes32() == u32_array_to_hex(BRIDGE_VK));
+    assert!(aggregation_vk.bytes32() == u32_array_to_hex(AGGREGATION_VK));
 
     let proof_aggregation: SP1ProofWithPublicValues = SP1ProofWithPublicValues::load(
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -89,16 +90,14 @@ async fn main() -> eyre::Result<()> {
             .join(format!("../../proof/chain{}/bridge_block_{}_to_{}_proof.bin", provider_config.chain_id, initial_block_number, final_block_number))
     ).expect("failed to load proof");
 
-    println!("proof_bridge: {:?}", proof_bridge.public_values.clone().read::<BridgeCommit>());
-    println!("proof_aggregation: {:?}", proof_aggregation.public_values.clone().read::<BlockAggregationCommit>());
+    // println!("proof_bridge: {:?}", proof_bridge.public_values.clone().read::<BridgeCommit>());
+    // println!("proof_aggregation: {:?}", proof_aggregation.public_values.clone().read::<BlockAggregationCommit>());
 
 
     // encode aggregation input and write to stdin
     let mut stdin_final_aggregation = SP1Stdin::new();
     let final_aggregation_input: FinalAggregationInput = FinalAggregationInput {
-        block_vkey_aggregation: aggregation_vk.clone().hash_u32(),
         block_aggregation_commit: proof_aggregation.public_values.clone().read::<BlockAggregationCommit>(),
-        block_vkey_bridge: bridge_vk.clone().hash_u32(),
         bridge_commit:proof_bridge.public_values.clone().read::<BridgeCommit>()
     };
     stdin_final_aggregation.write(&final_aggregation_input);
@@ -145,9 +144,6 @@ async fn main() -> eyre::Result<()> {
         let decoded_values = PublicValuesFinalAggregationSolidity::abi_decode(public_values_solidity_encoded, true).unwrap();
 
         println!("Decoded public values:");
-        println!("block_vkey_aggregation: 0x{}", (decoded_values.block_vkey_aggregation));
-        println!("block_vkey: 0x{}", (decoded_values.block_vkey));
-        println!("block_vkey_bridge: 0x{}", (decoded_values.block_vkey_bridge));
         println!("prev_l2_block_hash: 0x{}", decoded_values.prev_l2_block_hash);
         println!("new_l2_block_hash: 0x{}", decoded_values.new_l2_block_hash);
         println!("l1_block_hash: 0x{}", decoded_values.l1_block_hash);

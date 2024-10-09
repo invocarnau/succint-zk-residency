@@ -20,7 +20,6 @@ pub struct BlockAggregationInput {
 pub struct BlockAggregationCommit {
     pub prev_l2_block_hash: B256,
     pub new_l2_block_hash: B256,
-    pub block_vkey: [u32; 8], 
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -46,9 +45,7 @@ pub struct BridgeCommit {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FinalAggregationInput {
-    pub block_vkey_aggregation: [u32; 8], 
     pub block_aggregation_commit: BlockAggregationCommit,
-    pub block_vkey_bridge: [u32; 8], 
     pub bridge_commit: BridgeCommit,
 }
 
@@ -68,9 +65,6 @@ pub mod constants;
 sol! {
     #[derive(Debug, Serialize, Deserialize)]
     struct PublicValuesFinalAggregationSolidity {
-        bytes32 block_vkey_aggregation;
-        bytes32 block_vkey;
-        bytes32 block_vkey_bridge; 
         bytes32 prev_l2_block_hash;
         bytes32 new_l2_block_hash;
         bytes32 l1_block_hash;
@@ -78,4 +72,10 @@ sol! {
         address l1_ger_addr;
         address l2_ger_addr;   
     }
+}
+
+pub fn u32_array_to_hex(arr: [u32; 8]) -> String {
+    arr.iter()
+        .map(|&num| format!("{:08x}", num)) // Convert each u32 to an 8-character hex string
+        .collect::<String>() // Concatenate all hex strings into one
 }

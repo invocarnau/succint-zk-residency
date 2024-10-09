@@ -4,6 +4,8 @@
 sp1_zkvm::entrypoint!(main);
 
 use polccint_lib::{BlockAggregationCommit, BlockAggregationInput};
+use polccint_lib::constants::BLOCK_VK;
+
 use sha2::{Digest,Sha256};
 use bincode;
 
@@ -26,14 +28,13 @@ pub fn main() {
         let public_values = &input.block_commits[i];
         let serialized_public_values = bincode::serialize(public_values).unwrap();
         let public_values_digest = Sha256::digest(serialized_public_values);
-        sp1_zkvm::lib::verify::verify_sp1_proof(&input.block_vkey, &public_values_digest.into());
+        sp1_zkvm::lib::verify::verify_sp1_proof(&BLOCK_VK, &public_values_digest.into());
     }
 
     // Commit the block aggregation proof.
     let block_aggregation_commit = BlockAggregationCommit {
         prev_l2_block_hash: input.block_commits[0].prev_block_hash,
         new_l2_block_hash: input.block_commits.last().unwrap().new_block_hash,
-        block_vkey: input.block_vkey,
     };
     sp1_zkvm::io::commit(&block_aggregation_commit);
 }

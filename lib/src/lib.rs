@@ -2,6 +2,8 @@ use alloy_primitives::{B256, Address};
 use sp1_cc_client_executor::io::EVMStateSketch;
 use serde::{Deserialize, Serialize};
 
+pub mod op;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BlockCommit {
     pub prev_block_hash: B256,

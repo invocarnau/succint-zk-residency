@@ -26,3 +26,7 @@ The goal of this PoC is to integrate an existing OP chain to the uLxLy, using:
 - A created game includes the l2 block number and the state root
 
 All of this is subject to change. As the OP protocol is still evolving, and in particular fraud proofs have been recently introduced and later on halted...
+
+## Doubts:
+
+- It's unclear to me if the game factory is shared across different chains, and therefore we should check chain ID on each game.

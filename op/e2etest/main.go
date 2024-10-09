@@ -27,13 +27,6 @@ func main() {
 	listCommitsToL1()
 }
 
-type opHeader struct {
-	Hash            common.Hash `json:"hash"`
-	StateRoot       common.Hash `json:"stateRoot"`
-	WithdrawalsRoot common.Hash `json:"withdrawalsRoot"`
-	ParentHash      common.Hash `json:"parentHash"`
-}
-
 func listCommitsToL1() {
 	clientL1, err := ethclient.Dial(l1URL)
 	if err != nil {

@@ -10,6 +10,8 @@ members = [
     "fep-type-1/bridge/client",
     "fep-type-1/bridge/host",
     # "script",
+    "op/consensus/client",
+    "op/consensus/host",
 ]
 resolver = "2"
 
@@ -78,6 +80,9 @@ sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-cal
 
 # sha2
 sha2 = "0.10.8"
+
+tiny-keccak = { git = "https://github.com/sp1-patches/tiny-keccak", branch = "patch-v2.0.2" }
+
 
 [patch.crates-io]
 sha2-v0-10-8 = { git = "https://github.com/sp1-patches/RustCrypto-hashes", package = "sha2", branch = "patch-sha2-v0.10.8" }

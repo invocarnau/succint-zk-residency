@@ -9,3 +9,5 @@ rsp-client-executor.workspace = true
 sp1-cc-client-executor.workspace = true
 alloy-primitives.workspace = true
 serde.workspace = true
+tiny-keccak.workspace = true
+reth-primitives.workspace = true

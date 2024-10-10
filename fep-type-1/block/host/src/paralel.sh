@@ -11,7 +11,7 @@ start_block=$1
 range=$2
 
 # Define the number of parallel jobs
-num_jobs=4  # Adjust this number based on your CPU cores
+num_jobs=6  # Adjust this number based on your CPU cores
 
 # Function to run cargo with a specific block number
 run_cargo() {

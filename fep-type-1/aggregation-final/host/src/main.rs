@@ -179,7 +179,7 @@ async fn main() -> eyre::Result<()> {
             proof: format!("0x{}", hex::encode(proof.bytes())),
         };
 
-        let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../contracts/src/fixtures");
+        let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../fixtures");
         std::fs::create_dir_all(&fixture_path).expect("failed to create fixture path");
         std::fs::write(
             fixture_path.join(format!("{:?}-fixture.json", "proof_final_aggregation").to_lowercase()),

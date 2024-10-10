@@ -1,6 +1,8 @@
 use alloy_primitives::{B256, Address};
 use sp1_cc_client_executor::io::EVMStateSketch;
 use serde::{Deserialize, Serialize};
+use alloy_sol_types::sol;
+
 
 pub mod op;
 
@@ -20,7 +22,6 @@ pub struct BlockAggregationInput {
 pub struct BlockAggregationCommit {
     pub prev_l2_block_hash: B256,
     pub new_l2_block_hash: B256,
-    pub block_vkey: [u32; 8], 
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -46,9 +47,7 @@ pub struct BridgeCommit {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FinalAggregationInput {
-    pub block_vkey_aggregation: [u32; 8], 
     pub block_aggregation_commit: BlockAggregationCommit,
-    pub block_vkey_bridge: [u32; 8], 
     pub bridge_commit: BridgeCommit,
 }
 
@@ -63,3 +62,24 @@ pub struct SP1CCProofFixture {
 }
 
 pub mod constants;
+
+
+sol! {
+    #[derive(Debug, Serialize, Deserialize)]
+    struct PublicValuesFinalAggregationSolidity {
+        bytes32 prev_l2_block_hash;
+        bytes32 new_l2_block_hash;
+        bytes32 l1_block_hash;
+        bytes32 new_ler;
+        address l1_ger_addr;
+        address l2_ger_addr;   
+    }
+}
+
+pub fn u32_array_to_hex(arr: [u32; 8]) -> String {
+    let hex_string = arr.iter()
+        .map(|&num| format!("{:08x}", num)) // Convert each u32 to an 8-character hex string
+        .collect::<String>(); // Concatenate all hex strings into one
+
+    format!("0x{}", hex_string) // Prepend "0x" to the concatenated hex string
+}

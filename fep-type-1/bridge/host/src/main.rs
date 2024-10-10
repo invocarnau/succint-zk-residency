@@ -13,9 +13,10 @@ use url::Url;
 mod cli;
 use cli::ProviderArgs;
 use clap::Parser;
+use alloy_provider::Provider;
 
 use polccint_lib::{BridgeInput, SP1CCProofFixture};
-use polccint_lib::constants::CALLER;
+use polccint_lib::constants::{CALLER, CALLER_L1};
 
 // try what happens if the calls revert?¿
 sol! (
@@ -68,21 +69,23 @@ struct Args {
     #[clap(long)]
     chain_id_l2: Option<u64>,
 
-    /// The chain ID. If not provided, requires the rpc_url argument to be provided.
+    
     #[clap(long)]
-    block_number_initial: Option<u64>,
+    block_number_l1: u64,
 
-    /// The chain ID. If not provided, requires the rpc_url argument to be provided.
     #[clap(long)]
-    block_number_final: Option<u64>,
+    block_number_l2: u64,
 
-     /// The contract address for GER on L1.
-     #[clap(long)]
-     contract_ger_l1: String,
- 
-     /// The contract address for GER on L2.
-     #[clap(long)]
-     contract_ger_l2: String,
+    #[arg(long)]
+    block_range: u64,
+
+    /// The contract address for GER on L1.
+    #[clap(long)]
+    contract_ger_l1: String,
+
+    /// The contract address for GER on L2.
+    #[clap(long)]
+    contract_ger_l2: String,
 
     /// The hex bytes for imported GERs.
     #[clap(long)]
@@ -94,12 +97,15 @@ async fn main() -> eyre::Result<()> {
     // Intialize the environment variables.
     dotenv::dotenv().ok();
 
+    if std::env::var("RUST_LOG").is_err() {
+        std::env::set_var("RUST_LOG", "info");
+    }
+
     // Setup logging.
     utils::setup_logger();
 
     // Parse the command line arguments.
     let args = Args::parse();
-
 
     // Convert the contract addresses from strings to Address type
     let contract_ger_l1: Address = Address::from_str(&args.contract_ger_l1).expect("Invalid address");
@@ -129,8 +135,8 @@ async fn main() -> eyre::Result<()> {
     .parse::<Url>()
     .expect("Invalid URL format");
 
-    let block_number_initial = BlockNumberOrTag::Number(args.block_number_initial.unwrap_or_default() - 1);
-    let block_number_final = BlockNumberOrTag::Number(args.block_number_final.unwrap_or_default());
+    let block_number_initial = BlockNumberOrTag::Number(args.block_number_l2 - 1);
+    let block_number_final = BlockNumberOrTag::Number(args.block_number_l2 + args.block_range);
 
      // 1. Get the the last injecter GER of the previous block on L2
 
@@ -145,7 +151,7 @@ async fn main() -> eyre::Result<()> {
     let injected_ger_count = executor_injected_ger_count
         .execute(ContractInput {
             contract_address: contract_ger_l2,
-            caller_address:  address!("70997970c51812dc3a010c7d01b50e0d17dc79c8"),
+            caller_address:  CALLER,
             calldata: GlobalExitRootManagerL2SovereignChain::injectedGERCountCall {},
         })
         .await?
@@ -159,6 +165,7 @@ async fn main() -> eyre::Result<()> {
     let mut executor_check_injected_gers_and_return_ler = 
         HostExecutor::new(provider_l2.clone(), block_number_final).await?;
 
+    println!("Checking injectedGERs on L2");
     // Make the call to the slot0 function.
     let check_injected_gers_and_return_ler_call_output_decoded = executor_check_injected_gers_and_return_ler
         .execute(ContractInput {
@@ -170,6 +177,7 @@ async fn main() -> eyre::Result<()> {
             },
         })
         .await?;
+    println!("Checking injectedGERs on L2 finished");
 
     // Check that the check was successful
     assert_eq!(check_injected_gers_and_return_ler_call_output_decoded.success, true);
@@ -179,22 +187,23 @@ async fn main() -> eyre::Result<()> {
 
     // 3. Check that the GERs exist on L1
     let mut executor_check_gers_existance =
-     HostExecutor::new(provider_l1.clone(), block_number_final).await?;
+    HostExecutor::new(provider_l1.clone(), BlockNumberOrTag::from(args.block_number_l1)).await?;
 
     // Make the call to the slot0 function.
+    println!("Checking injectedGERs on L1");
     let check_injected_gers_existance_decoded = executor_check_gers_existance
         .execute(ContractInput {
             contract_address: contract_ger_l1,
-            caller_address: CALLER,
+            caller_address: CALLER_L1,
             calldata: GlobalExitRootScrapper::checkGERsExistanceCall { globalExitRoots: imported_gers.clone() },
         })
         .await?;
-
+    println!("Checking injectedGERs on L1 finished");
     // Check that the check was successful
     assert_eq!(check_injected_gers_existance_decoded.success, true);
 
     // Now that we've executed all of the calls, get the `EVMStateSketch` from the host executor.
-    let executor_check_injected_gers_existance = executor_check_injected_gers_and_return_ler.finalize().await?;
+    let executor_check_injected_gers_existance = executor_check_gers_existance.finalize().await?;
 
     // Feed the sketch into the client.
 
@@ -227,7 +236,7 @@ async fn main() -> eyre::Result<()> {
 
         client.verify(&proof, &vk).expect("proof verification should succeed");
         // Handle the result of the save operation
-        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../proof/chain{}/bridge_block_{}_to_{}_proof.bin", args.chain_id_l2.unwrap(), args.block_number_initial.unwrap(), args.block_number_final.unwrap()))) {
+        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../proof/chain{}/bridge_block_{}_to_{}_proof.bin", args.chain_id_l2.unwrap(), args.block_number_l2, args.block_number_l2 + args.block_range))) {
             Ok(_) => println!("Proof saved successfully."),
             Err(e) => eprintln!("Failed to save proof: {}", e),
         }

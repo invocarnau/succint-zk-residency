@@ -6,14 +6,17 @@ use sp1_sdk::{SP1Proof, HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWith
 mod cli;
 use cli::ProviderArgs;
 use url::Url;
-use polccint_lib::{BlockCommit, BlockAggregationInput, BlockAggregationCommit};
+use polccint_lib::{BlockCommit, BlockAggregationInput, BlockAggregationCommit, u32_array_to_hex};
 use std::path::PathBuf;
+use polccint_lib::constants::BLOCK_VK;
 
 #[derive(Parser, Debug)]
 struct Args {
     /// The block number of the block to execute.
     #[clap(long)]
     block_number: u64,
+    #[arg(long)]
+    block_range: u64,
     #[clap(flatten)]
     provider: ProviderArgs,
 
@@ -77,8 +80,12 @@ async fn main() -> eyre::Result<()> {
     let (aggregation_pk, aggregation_vk) = client.setup(ELF_BLOCK_AGGREGATION);
     let (block_pk, block_vk) = client.setup(ELF_BLOCK);
 
+   
+    // assert constant vk with elf vk 
+    assert!(block_vk.hash_u32() == BLOCK_VK);
+
     let initial_block_number = args.block_number;
-    let block_range = 2; // hardcode for now TODO
+    let block_range = args.block_range; // hardcode for now TODO
     let final_block_number = initial_block_number + block_range;
 
     let mut inputs: Vec<AggregationInput> = Vec::new();
@@ -107,7 +114,7 @@ async fn main() -> eyre::Result<()> {
     //     );
     // }
 
-    for block_number in initial_block_number..final_block_number {
+    for block_number in initial_block_number..final_block_number + 1 {
         let proof: SP1ProofWithPublicValues = SP1ProofWithPublicValues::load(
             PathBuf::from(env!("CARGO_MANIFEST_DIR"))
                 .join(format!(
@@ -182,3 +189,4 @@ async fn main() -> eyre::Result<()> {
     }
     Ok(())
 }
+

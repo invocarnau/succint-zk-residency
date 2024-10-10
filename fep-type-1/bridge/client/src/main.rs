@@ -4,7 +4,7 @@
 sp1_zkvm::entrypoint!(main);
 
 use polccint_lib::{BridgeCommit, BridgeInput};
-use polccint_lib::constants::{CALLER, CALLER_L1};
+use polccint_lib::constants::{CALLER};
 
 use sp1_cc_client_executor::{ClientExecutor, ContractInput};
 use alloy_sol_types::SolCall;
@@ -90,7 +90,7 @@ pub fn main() {
 
     let check_gers_existance_l1_input = ContractInput {
         contract_address: input.l1_ger_addr,
-        caller_address: CALLER_L1,
+        caller_address: CALLER,
         calldata: GlobalExitRootScrapper::checkGERsExistanceCall { globalExitRoots: input.injected_gers.clone() },
     };
     let check_gers_existance_l1_call_output = executor_check_gers_existance

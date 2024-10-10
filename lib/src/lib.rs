@@ -75,7 +75,9 @@ sol! {
 }
 
 pub fn u32_array_to_hex(arr: [u32; 8]) -> String {
-    arr.iter()
+    let hex_string = arr.iter()
         .map(|&num| format!("{:08x}", num)) // Convert each u32 to an 8-character hex string
-        .collect::<String>() // Concatenate all hex strings into one
+        .collect::<String>(); // Concatenate all hex strings into one
+
+    format!("0x{}", hex_string) // Prepend "0x" to the concatenated hex string
 }

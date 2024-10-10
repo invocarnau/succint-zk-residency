@@ -30,10 +30,10 @@ import (
 )
 
 const (
-	l1ChainID       = 1337
+	l1ChainID       = 11155111
 	l2ChainID       = 42069
 	l2NetworkID     = uint32(1)
-	l1URL           = "http://localhost:8545"
+	l1URL           = "https://eth-sepolia.g.alchemy.com/v2/
 	l2URL           = "http://localhost:8555"
 	alreadyDeployed = false
 )
@@ -41,8 +41,8 @@ const (
 var (
 	gerAddrL2AlreadyDeployed    = common.HexToAddress("0x8058D80131e6F57E99830Dce403BBAF4e64C9b8A")
 	bridgeAddrL2AlreadyDeployed = common.HexToAddress("0xb0a5546A0Efd8950D8964a9dB66DFF5569EEfDE7")
-	gerAddrL1                   = common.HexToAddress("0x8A791620dd6260079BF849Dc5567aDC3F2FdC318")
-	bridgeAddrL1                = common.HexToAddress(("0xAbbeC0792bb8639B2a64Cc895bBcf5E6CC427c41"))
+	gerAddrL1                   = common.HexToAddress("0xBa36ee0dBDC8fe4c2f82dD75506CF836E0205974")
+	bridgeAddrL1                = common.HexToAddress(("0x1f0628734B08A34fdA4a700453dfecd2A2Bf648d"))
 )
 
 func TestBridgeEVM(t *testing.T) {
@@ -66,7 +66,13 @@ func loadAuth(t *testing.T) (*bind.TransactOpts, *bind.TransactOpts) {
 	require.NoError(t, err)
 	key, err := keystore.DecryptKey(keystoreEncrypted, "testonly")
 	require.NoError(t, err)
-	authL1, err := bind.NewKeyedTransactorWithChainID(key.PrivateKey, new(big.Int).SetUint64(l1ChainID))
+	keystoreEncryptedL1, err := os.ReadFile("./config/l1Sender.keystore")
+	require.NoError(t, err)
+	keyL1, err := keystore.DecryptKey(keystoreEncryptedL1, "testonly")
+
+	// private key
+	require.NoError(t, err)
+	authL1, err := bind.NewKeyedTransactorWithChainID(keyL1.PrivateKey, new(big.Int).SetUint64(l1ChainID))
 	require.NoError(t, err)
 	authL2, err := bind.NewKeyedTransactorWithChainID(key.PrivateKey, new(big.Int).SetUint64(l2ChainID))
 	require.NoError(t, err)
@@ -83,7 +89,7 @@ func runL1(t *testing.T) (
 	if !alreadyDeployed {
 		msg, err := exec.Command("bash", "-l", "-c", "docker compose up -d test-fep-type1-l1").CombinedOutput()
 		require.NoError(t, err, string(msg))
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 10)
 	}
 	client, err := ethclient.Dial(l1URL)
 	require.NoError(t, err)
@@ -106,7 +112,7 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 	if !alreadyDeployed {
 		msg, err := exec.Command("bash", "-l", "-c", "docker compose up -d test-fep-type1-l2").CombinedOutput()
 		require.NoError(t, err, string(msg))
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 8)
 		require.NoError(t, err)
 
 		// create tmp auth to deploy contracts
@@ -129,7 +135,7 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 		require.NoError(t, err)
 		err = client.SendTransaction(ctx, signedTx)
 		require.NoError(t, err)
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 10)
 		balance, err := client.BalanceAt(ctx, authDeployer.From, nil)
 		require.NoError(t, err)
 		require.Equal(t, amountToTransfer, balance)
@@ -141,7 +147,7 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 		require.NoError(t, err)
 		err = client.SendTransaction(ctx, signedTx)
 		require.NoError(t, err)
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 11)
 		balance, err = client.BalanceAt(ctx, precalculatedBridgeAddr, nil)
 		require.NoError(t, err)
 		require.Equal(t, amountToTransfer, balance)
@@ -149,12 +155,12 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 		// deploy bridge impl
 		bridgeImplementationAddr, _, _, err := polygonzkevmbridgev2.DeployPolygonzkevmbridgev2(authDeployer, client)
 		require.NoError(t, err)
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 10)
 
 		// deploy bridge proxy
 		nonce, err = client.PendingNonceAt(ctx, authDeployer.From)
 		require.NoError(t, err)
-		precalculatedAddr := crypto.CreateAddress(authDeployer.From, nonce+1)
+		precalculatedAddr := crypto.CreateAddress(authDeployer.From, nonce+2)
 		bridgeABI, err := polygonzkevmbridgev2.Polygonzkevmbridgev2MetaData.GetAbi()
 		require.NoError(t, err)
 		if bridgeABI == nil {
@@ -185,7 +191,7 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 			err = fmt.Errorf("error calculating bridge addr. Expected: %s. Actual: %s", precalculatedBridgeAddr, bridgeAddr)
 			require.NoError(t, err)
 		}
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 10)
 		bridgeContract, err := polygonzkevmbridgev2.NewPolygonzkevmbridgev2(bridgeAddr, client)
 		require.NoError(t, err)
 		checkGERAddr, err := bridgeContract.GlobalExitRootManager(&bind.CallOpts{})
@@ -198,9 +204,14 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 		// deploy GER
 		gerAddr, _, gerContract, err := gerl2.DeployGlobalexitrootmanagerl2sovereignchain(authDeployer, client, auth.From)
 		require.NoError(t, err)
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 10)
 		fmt.Println("gerAddr ", gerAddr)
 		fmt.Println("bridgeAddr ", bridgeAddr)
+
+		if precalculatedAddr != gerAddr {
+			err = errors.New("error deploying bridge")
+			require.NoError(t, err)
+		}
 
 		return client, gerAddr, gerContract, bridgeAddr, bridgeContract
 	} else {
@@ -243,7 +254,7 @@ func runBridgeL1toL2Test(
 		// Send bridge L1 -> L2
 		fmt.Println("--- ITERATION ", i)
 		fmt.Println("sending bridge tx to L1")
-		amount := big.NewInt(1000000000000000000) //nolint:gomnd
+		amount := big.NewInt(10000000000000000) //nolint:gomnd
 		authL1.Value = amount
 		claimL1toL2 := claimsponsor.Claim{
 			LeafType:           0,
@@ -254,11 +265,11 @@ func runBridgeL1toL2Test(
 			Amount:             amount,
 			Metadata:           nil,
 		}
-		gerBefore, err := gerL1Contract.GetLastGlobalExitRoot(nil)
+		_, err := gerL1Contract.GetLastGlobalExitRoot(nil)
 		require.NoError(t, err)
 		tx, err := bridgeL1.BridgeAsset(authL1, claimL1toL2.DestinationNetwork, claimL1toL2.DestinationAddress, claimL1toL2.Amount, claimL1toL2.OriginTokenAddress, true, nil)
 		require.NoError(t, err)
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Second * 30)
 		gerAfter, err := gerL1Contract.GetLastGlobalExitRoot(nil)
 		require.NoError(t, err)
 		require.NotEqual(t, gerBefore, gerAfter)
@@ -273,6 +284,7 @@ func runBridgeL1toL2Test(
 		require.NoError(t, err)
 		require.Equal(t, receipt.Status, types.ReceiptStatusSuccessful)
 		depositCount := bridgeEvent.DepositCount
+
 		var bridgeIncluddedAtIndex uint32
 		found := false
 		for i := 0; i < 40; i++ { // block needs to be finalised, takes ~32s
@@ -340,7 +352,7 @@ func runBridgeL1toL2Test(
 
 		// bridge back to L1
 		fmt.Println("bridging back to L1...")
-		amount = big.NewInt(1000000) //nolint:gomnd
+		amount = big.NewInt(100) //nolint:gomnd
 		authL2.Value = amount
 		claimL2toL1 := claimsponsor.Claim{
 			LeafType:           0,
@@ -356,17 +368,18 @@ func runBridgeL1toL2Test(
 		balance, err := clientL2.BalanceAt(context.TODO(), authL2.From, nil)
 		require.NoError(t, err)
 		fmt.Println("balance: ", balance)
-		tx, err = bridgeL2.BridgeAsset(authL2, claimL2toL1.DestinationNetwork, claimL2toL1.DestinationAddress, claimL2toL1.Amount, claimL2toL1.OriginTokenAddress, false, nil)
+		tx, err := bridgeL2.BridgeAsset(authL2, claimL2toL1.DestinationNetwork, claimL2toL1.DestinationAddress, claimL2toL1.Amount, claimL2toL1.OriginTokenAddress, true, nil)
 		// if err != nil {
 		// 	authL2.GasPrice = big.NewInt(1) //nolint:gomnd
 		// 	authL2.GasLimit = 1000000
 		// 	authL2.
 		// }
 		require.NoError(t, err)
-		time.Sleep(time.Second * 2)
-		receipt, err = clientL2.TransactionReceipt(context.TODO(), tx.Hash())
+		time.Sleep(time.Second * 10)
+		receipt, err := clientL2.TransactionReceipt(context.TODO(), tx.Hash())
 		require.NoError(t, err)
-		bridgeEvent, err = bridgeL2.ParseBridgeEvent(*receipt.Logs[0])
+		bridgeEvent, err := bridgeL2.ParseBridgeEvent(*receipt.Logs[0])
+		fmt.Printf("bridgeEventL2: %+v\n", bridgeEvent)
 		require.NoError(t, err)
 		require.Equal(t, receipt.Status, types.ReceiptStatusSuccessful)
 		depositCount = bridgeEvent.DepositCount

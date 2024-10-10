@@ -1,25 +1,16 @@
 use alloy_primitives::{address, Address};
 
+// final aggregation vk: 0x00c7dca51c03c7b4db25b4c342d4178b8e7e1107dbcbf246c372a91c2950a068
+
 /// Address of the caller.
 pub const CALLER: Address = address!("70997970c51812dc3a010c7d01b50e0d17dc79c8");
+pub const CALLER_L1: Address = address!("0000000000000000000000000000000000000000");
 
-// 006ec047f79b977379bf77e5d307fcba13d35ce1f082daddab6f653ff6f1c642
-pub const BLOCK_VK: [u32; 8] = [
-    0x006ec047, 0xf79b9773, 0x79bf77e5, 0xd307fcba,
-    0x13d35ce1, 0xf082dadd, 0xab6f653f, 0xf6f1c642,
-];
+pub const BLOCK_VK: [u32; 8] = [929047547, 1726340318, 938409146, 813681569, 513468175, 1108044662, 1457441407, 1995556418];
 
-// 00b5890ad47a7173b6796a01ea19229b23b5578e591f43b8975c52bea8edb645
-pub const BRIDGE_VK: [u32; 8] = [
-    0x00b5890a, 0xd47a7173, 0xb6796a01, 0xea19229b,
-    0x23b5578e, 0x591f43b8, 0x975c52be, 0xa8edb645,
-];
+pub const BRIDGE_VK: [u32; 8] = [849736881, 658232624, 1674334477, 1541155920, 438872218, 596269535, 1057449073, 523602103];
 
 // aggregation vk
-// 0028cf30add79337cef8fbc67e8922c214f6bf278fb2fc78a9cf9dfcacd6ec11
-pub const AGGREGATION_VK: [u32; 8] = [
-    0x0028cf30, 0xadd79337, 0xcef8fbc6, 0x7e8922c2,
-    0x14f6bf27, 0x8fb2fc78, 0xa9cf9dfc, 0xacd6ec11,
-];
+pub const AGGREGATION_VK: [u32; 8] = [1480055870, 451662487, 1899574304, 729955651, 300839141, 1354052588, 1891154660, 47361319];
 
 

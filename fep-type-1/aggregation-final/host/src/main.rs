@@ -17,6 +17,7 @@ use polccint_lib::PublicValuesFinalAggregationSolidity;
 use alloy_sol_types::SolType;
 // import constants from lib
 use polccint_lib::constants::{BRIDGE_VK, AGGREGATION_VK};
+use serde::{Serialize, Deserialize};
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -25,6 +26,8 @@ struct Args {
     block_number: u64,
     #[clap(flatten)]
     provider: ProviderArgs,
+    #[clap(long)]
+    block_range: u64,
 
     /// Whether or not to generate a proof.
     #[arg(long, default_value_t = false)]
@@ -43,6 +46,19 @@ struct AggregationInput {
     pub proof: SP1ProofWithPublicValues,
     pub vk: SP1VerifyingKey,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct SP1FinalAggregationProofFixture {
+    pub prev_l2_block_hash: String,
+    pub new_l2_block_hash: String,
+    pub l1_block_hash: String,
+    pub new_ler: String,
+    pub l1_ger_addr: String,
+    pub l2_ger_addr: String,
+    pub vkey: String,
+    pub public_values: String,
+    pub proof: String,
+}   
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
@@ -72,12 +88,12 @@ async fn main() -> eyre::Result<()> {
     let (final_aggregation_pk, final_aggregation_vk) = client.setup(ELF_FINAL_AGGREGATION);
 
     let initial_block_number = args.block_number;
-    let block_range = 1; // hardcode for now TODO
+    let block_range = args.block_range; // hardcode for now TODO
     let final_block_number = initial_block_number + block_range;
 
     // assert constant vk with elf vk 
-    assert!(bridge_vk.bytes32() == u32_array_to_hex(BRIDGE_VK));
-    assert!(aggregation_vk.bytes32() == u32_array_to_hex(AGGREGATION_VK));
+    assert!(bridge_vk.hash_u32() == BRIDGE_VK);
+    assert!(aggregation_vk.hash_u32() == AGGREGATION_VK);
 
     let proof_aggregation: SP1ProofWithPublicValues = SP1ProofWithPublicValues::load(
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -129,7 +145,7 @@ async fn main() -> eyre::Result<()> {
 
     if args.prove {
         println!("Starting proof generation.");
-        let proof: SP1ProofWithPublicValues = client.prove(&final_aggregation_pk, stdin_final_aggregation.clone()).run().expect("Proving should work.");
+        let proof: SP1ProofWithPublicValues = client.prove(&final_aggregation_pk, stdin_final_aggregation.clone()).plonk().run().expect("Proving should work.");
         println!("Proof generation finished.");
 
         client.verify(&proof, &final_aggregation_vk).expect("proof verification should succeed");
@@ -150,6 +166,27 @@ async fn main() -> eyre::Result<()> {
         println!("new_ler: 0x{}", decoded_values.new_ler);
         println!("l1_ger_addr: {}", decoded_values.l1_ger_addr);
         println!("l2_ger_addr: {}", decoded_values.l2_ger_addr);
+
+        let fixture = SP1FinalAggregationProofFixture {
+            prev_l2_block_hash: format!("{}", decoded_values.prev_l2_block_hash),
+            new_l2_block_hash: format!("{}", decoded_values.new_l2_block_hash),
+            l1_block_hash: format!("{}", decoded_values.l1_block_hash),
+            new_ler: format!("{}", decoded_values.new_ler),
+            l1_ger_addr: decoded_values.l1_ger_addr.to_string(),
+            l2_ger_addr: decoded_values.l2_ger_addr.to_string(),
+            vkey: final_aggregation_vk.bytes32().to_string(),
+            public_values: format!("0x{}", hex::encode(public_values_solidity_encoded)),
+            proof: format!("0x{}", hex::encode(proof.bytes())),
+        };
+
+        let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../contracts/src/fixtures");
+        std::fs::create_dir_all(&fixture_path).expect("failed to create fixture path");
+        std::fs::write(
+            fixture_path.join(format!("{:?}-fixture.json", "proof_final_aggregation").to_lowercase()),
+            serde_json::to_string_pretty(&fixture).unwrap(),
+        )
+        .expect("failed to write fixture");
+
     }
     Ok(())
 }

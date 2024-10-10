@@ -15,6 +15,8 @@ struct Args {
     /// The block number of the block to execute.
     #[clap(long)]
     block_number: u64,
+    #[arg(long)]
+    block_range: u64,
     #[clap(flatten)]
     provider: ProviderArgs,
 
@@ -80,10 +82,10 @@ async fn main() -> eyre::Result<()> {
 
    
     // assert constant vk with elf vk 
-    assert!(block_vk.bytes32() == u32_array_to_hex(BLOCK_VK));
+    assert!(block_vk.hash_u32() == BLOCK_VK);
 
     let initial_block_number = args.block_number;
-    let block_range = 1; // hardcode for now TODO
+    let block_range = args.block_range; // hardcode for now TODO
     let final_block_number = initial_block_number + block_range;
 
     let mut inputs: Vec<AggregationInput> = Vec::new();

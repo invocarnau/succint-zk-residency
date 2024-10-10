@@ -13,7 +13,7 @@
       "londonBlock": 0,
       "shanghaiTime": 0,
       "clique": {
-        "period": 1,
+        "period": 8,
         "epoch": 1
       }
     },

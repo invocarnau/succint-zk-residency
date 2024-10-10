@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 use alloy_sol_types::sol;
 
 
+pub mod op;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BlockCommit {
     pub prev_block_hash: B256,

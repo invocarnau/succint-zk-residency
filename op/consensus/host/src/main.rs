@@ -177,7 +177,7 @@ async fn main() -> eyre::Result<()> {
 
         client.verify(&proof, &vk).expect("proof verification should succeed");
         // Handle the result of the save operation
-        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../proof/chain{}/bridge_block_{}_to_{}_proof.bin", args.chain_id_l2.unwrap(), args.block_number_l2, args.block_number_l2 + args.block_range))) {
+        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../proof/chain{}/op_consensus_game_{}.bin", args.chain_id_l2.unwrap(), args.game_index))) {
             Ok(_) => println!("Proof saved successfully."),
             Err(e) => eprintln!("Failed to save proof: {}", e),
         }

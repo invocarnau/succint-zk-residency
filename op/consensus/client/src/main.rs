@@ -73,6 +73,9 @@ pub fn main() {
     // 4. Check that the current block number is older than the previous one
     assert!(input.new_l2_block_header.number > input.prev_l2_block_header.number);
 
+    // 5. Assert that same block has been used for both calls
+    assert_eq!(get_game_from_factory_output.blockHash, get_root_claim_output.blockHash);
+
     // Commit
     let consensus_commit = OPConsensusCommit {
         game_factory_address: input.game_factory_address,

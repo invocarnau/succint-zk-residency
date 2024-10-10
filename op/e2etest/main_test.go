@@ -361,7 +361,7 @@ func runBridgeL1toL2Test(
 		balance, err := clientL2.BalanceAt(context.TODO(), authL2.From, nil)
 		require.NoError(t, err)
 		fmt.Println("balance: ", balance)
-		tx, err = bridgeL2.BridgeAsset(authL2, claimL2toL1.DestinationNetwork, claimL2toL1.DestinationAddress, claimL2toL1.Amount, claimL2toL1.OriginTokenAddress, false, nil)
+		tx, err = bridgeL2.BridgeAsset(authL2, claimL2toL1.DestinationNetwork, claimL2toL1.DestinationAddress, claimL2toL1.Amount, claimL2toL1.OriginTokenAddress, true, nil)
 		// if err != nil {
 		// 	authL2.GasPrice = big.NewInt(1) //nolint:gomnd
 		// 	authL2.GasLimit = 1000000

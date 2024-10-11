@@ -151,7 +151,7 @@ func runL2(t *testing.T, auth *bind.TransactOpts) (
 		fmt.Println("deploying bridge proxy")
 		nonce, err = client.PendingNonceAt(ctx, authDeployer.From)
 		require.NoError(t, err)
-		precalculatedAddr := crypto.CreateAddress(authDeployer.From, nonce+1)
+		precalculatedAddr := crypto.CreateAddress(authDeployer.From, nonce+3)
 		bridgeABI, err := polygonzkevmbridgev2.Polygonzkevmbridgev2MetaData.GetAbi()
 		require.NoError(t, err)
 		if bridgeABI == nil {

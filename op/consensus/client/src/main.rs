@@ -68,6 +68,7 @@ pub fn main() {
         &get_root_claim_output.contractOutput, true
     ).unwrap().rootClaim;
     let expected_root_claim = input.root_claim_pre_image.hash();
+    println!("expected_root_claim: {}, actual claim: {}", expected_root_claim, root_claim);
     assert_eq!(root_claim, expected_root_claim);
 
     // 4. Check that the current block number is older than the previous one

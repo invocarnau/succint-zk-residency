@@ -1,12 +1,8 @@
-use alloy_provider::ReqwestProvider;
 use clap::Parser;
-use rsp_client_executor::{ChainVariant, CHAIN_ID_ETH_MAINNET};
-use rsp_host_executor::HostExecutor;
 use sp1_sdk::{SP1Proof, HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWithPublicValues, SP1VerifyingKey};
 mod cli;
 use cli::ProviderArgs;
-use url::Url;
-use polccint_lib::{BlockCommit, BlockAggregationInput, BlockAggregationCommit, u32_array_to_hex};
+use polccint_lib::{BlockCommit, BlockAggregationInput, BlockAggregationCommit};
 use std::path::PathBuf;
 use polccint_lib::constants::BLOCK_VK;
 
@@ -78,7 +74,7 @@ async fn main() -> eyre::Result<()> {
 
     // Setup the proving and verifying keys.
     let (aggregation_pk, aggregation_vk) = client.setup(ELF_BLOCK_AGGREGATION);
-    let (block_pk, block_vk) = client.setup(ELF_BLOCK);
+    let (_, block_vk) = client.setup(ELF_BLOCK);
 
    
     // assert constant vk with elf vk 

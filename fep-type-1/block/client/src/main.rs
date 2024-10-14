@@ -8,11 +8,11 @@ pub fn main() {
     // Read the input.
     let input = sp1_zkvm::io::read_vec();
     let input = bincode::deserialize::<ClientExecutorInput>(&input).unwrap();
-    let chainId = sp1_zkvm::io::read::<u64>();
+    let chain_id = sp1_zkvm::io::read::<u64>();
 
    // Execute the block.
    let executor = ClientExecutor;
-   let header = executor.execute_with_chain_id::<CliqueShanghaiChainIDVariant>(chainId, input).expect("failed to execute client");
+   let header = executor.execute_with_chain_id::<CliqueShanghaiChainIDVariant>(chain_id, input).expect("failed to execute client");
 
     // Commit.
     let block_commit = BlockCommit {

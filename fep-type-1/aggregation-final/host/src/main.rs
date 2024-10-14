@@ -1,17 +1,11 @@
-use alloy_provider::ReqwestProvider;
 use clap::Parser;
-use rsp_client_executor::{ChainVariant, CHAIN_ID_ETH_MAINNET};
-use rsp_host_executor::HostExecutor;
-use sp1_sdk::{SP1Proof, HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWithPublicValues, SP1VerifyingKey};
+use sp1_sdk::{SP1Proof, HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWithPublicValues};
 mod cli;
 use cli::ProviderArgs;
-use url::Url;
-use polccint_lib::{BridgeCommit, BlockCommit, BlockAggregationInput, BlockAggregationCommit, FinalAggregationInput, u32_array_to_hex};
-use alloy_rpc_types::BlockNumberOrTag;
-use alloy_primitives::{address, Address};
+use polccint_lib::{BlockAggregationCommit, FinalAggregationInput};
+use polccint_lib::bridge::{BridgeCommit};
+
 use alloy::hex;
-use sp1_cc_host_executor::HostExecutor  as StaticCallHostExecutor;
-use sp1_cc_client_executor::{ContractInput};
 use std::path::PathBuf;
 use polccint_lib::PublicValuesFinalAggregationSolidity;
 use alloy_sol_types::SolType;
@@ -38,14 +32,6 @@ const ELF_BLOCK_AGGREGATION: &[u8] = include_bytes!("../../../../elf/block-aggre
 const ELF_BRIDGE: &[u8] = include_bytes!("../../../../elf/bridge");
 const ELF_FINAL_AGGREGATION: &[u8] = include_bytes!("../../../../elf/aggregation-final");
 
-
-/// An input to the aggregation program.
-///
-/// Consists of a proof and a verification key.
-struct AggregationInput {
-    pub proof: SP1ProofWithPublicValues,
-    pub vk: SP1VerifyingKey,
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct SP1FinalAggregationProofFixture {
@@ -83,8 +69,8 @@ async fn main() -> eyre::Result<()> {
     let client = ProverClient::new();
 
     // Setup the proving and verifying keys.
-    let (aggregation_pk,aggregation_vk) = client.setup(ELF_BLOCK_AGGREGATION);
-    let (bridge_pk, bridge_vk) = client.setup(ELF_BRIDGE);
+    let (_,aggregation_vk) = client.setup(ELF_BLOCK_AGGREGATION);
+    let (_, bridge_vk) = client.setup(ELF_BRIDGE);
     let (final_aggregation_pk, final_aggregation_vk) = client.setup(ELF_FINAL_AGGREGATION);
 
     let initial_block_number = args.block_number;

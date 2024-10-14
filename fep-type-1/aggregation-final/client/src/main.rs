@@ -8,7 +8,6 @@ use sha2::{Digest,Sha256};
 use bincode;
 use polccint_lib::PublicValuesFinalAggregationSolidity;
 use alloy_sol_types::SolType;
-use alloy_primitives::FixedBytes;
 use polccint_lib::constants::{BRIDGE_VK, AGGREGATION_VK};
 
 pub fn main() {

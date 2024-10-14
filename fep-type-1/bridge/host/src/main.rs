@@ -16,7 +16,7 @@ use clap::Parser;
 use alloy_provider::Provider;
 
 use polccint_lib::{BridgeInput, SP1CCProofFixture};
-use polccint_lib::constants::{CALLER, CALLER_L1};
+use polccint_lib::constants::{CALLER};
 
 // try what happens if the calls revert?¿
 sol! (
@@ -194,7 +194,7 @@ async fn main() -> eyre::Result<()> {
     let check_injected_gers_existance_decoded = executor_check_gers_existance
         .execute(ContractInput {
             contract_address: contract_ger_l1,
-            caller_address: CALLER_L1,
+            caller_address: CALLER,
             calldata: GlobalExitRootScrapper::checkGERsExistanceCall { globalExitRoots: imported_gers.clone() },
         })
         .await?;

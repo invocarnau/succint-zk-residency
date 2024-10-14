@@ -6389,7 +6389,7 @@ dependencies = [
 [[package]]
 name = "sp1-cc-client-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call/?branch=main#b21343241a7ecc86276e8f5a04911e8670dd9183"
+source = "git+https://github.com/succinctlabs/sp1-contract-call/?branch=main#3ae5873a34a4d6b309a93c3bbad951c65ede3277"
 dependencies = [
  "alloy-sol-types 0.8.5",
  "eyre",
@@ -6408,7 +6408,7 @@ dependencies = [
 [[package]]
 name = "sp1-cc-host-executor"
 version = "0.1.0"
-source = "git+https://github.com/succinctlabs/sp1-contract-call/?branch=main#b21343241a7ecc86276e8f5a04911e8670dd9183"
+source = "git+https://github.com/succinctlabs/sp1-contract-call/?branch=main#3ae5873a34a4d6b309a93c3bbad951c65ede3277"
 dependencies = [
  "alloy-primitives 0.8.5",
  "alloy-provider",

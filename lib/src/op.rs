@@ -43,12 +43,12 @@ mod tests {
     fn test_root_claim_pre_image() {
         // Create a test instance
         let pre_image = RootClaimPreImage {
-            block_hash: b256!("4f8f97b1f7fbc30e8315d320ae93942f8230c8a8a9c0543bfd6afbc60aa863c2"),
-            state_root: b256!("0f0e5aed12699c19b5c82fd0247a07821f18c0aa39a739faf549d56e77210fae"),
+            block_hash: b256!("c89e39471b02783985e6c5a9304ce219fe24fe888f4b175414d8e156eb2c66ed"),
+            state_root: b256!("a46cfc8f0a9eb0d222463cef0d85015c07ece30e747c23852023ac17551c3682"),
             message_passer_storage_root: b256!("8ed4baae3a927be3dea54996b4d5899f8c01e7594bf50b17dc1e741388ce3d12"),
         };
         let hash = pre_image.hash();
-        assert_eq!(hash, b256!("b598ce68aab8c040740fb183cce963ba651fb6b643972eb9b3831382e381935d"));
+        assert_eq!(hash, b256!("f58f94a10efbd83c675189b3738c8862556bc868fb1130de4fca4188a636ab19"));
     }
 }
 

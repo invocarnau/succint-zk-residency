@@ -7,7 +7,7 @@ use std::path::PathBuf;
 mod cli;
 use cli::ProviderArgs;
 use url::Url;
-use polccint_lib::BlockCommit;
+use polccint_lib::fep_type_1::BlockCommit;
 
 #[derive(Parser, Debug)]
 struct Args {

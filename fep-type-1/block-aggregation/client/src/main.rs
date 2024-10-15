@@ -3,7 +3,7 @@
 #![no_main]
 sp1_zkvm::entrypoint!(main);
 
-use polccint_lib::{BlockAggregationCommit, BlockAggregationInput};
+use polccint_lib::fep_type_1::{BlockAggregationCommit, BlockAggregationInput};
 use polccint_lib::constants::BLOCK_VK;
 
 use sha2::{Digest,Sha256};

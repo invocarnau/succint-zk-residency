@@ -1,7 +1,7 @@
 #![no_main]
 sp1_zkvm::entrypoint!(main);
 
-use polccint_lib::BlockCommit;
+use polccint_lib::fep_type_1::BlockCommit;
 use rsp_client_executor::{io::ClientExecutorInput, ClientExecutor, CliqueShanghaiChainIDVariant};
 
 pub fn main() {

@@ -2,7 +2,7 @@ use clap::Parser;
 use sp1_sdk::{SP1Proof, HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWithPublicValues, SP1VerifyingKey};
 mod cli;
 use cli::ProviderArgs;
-use polccint_lib::{BlockCommit, BlockAggregationInput, BlockAggregationCommit};
+use polccint_lib::fep_type_1::{BlockCommit, BlockAggregationInput, BlockAggregationCommit};
 use std::path::PathBuf;
 use polccint_lib::constants::BLOCK_VK;
 

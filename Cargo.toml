@@ -13,6 +13,7 @@ members = [
     "bridge/host",
     "agglayer-proof/host",
     "agglayer-proof/client",
+    "pos-consensus-proof/client",
     # "script",
     "op/consensus/client",
     "op/consensus/host",
@@ -35,7 +36,10 @@ tokio = { version = "1.21", default-features = false, features = [
     "rt-multi-thread",
 ] }
 hex = "0.4.3"
-
+base64 = "0.22.1"
+bytes = "1.7.1"
+prost = "0.13.1"
+prost-types = "0.13.1"
 
 # rsp
 rsp-rpc-db = { git = "https://github.com/invocamanman/rsp" , branch = "feature/addDinamycChainIDClique"}
@@ -60,6 +64,7 @@ alloy-sol-types = { version = "0.8" }
 alloy-primitives = "0.8.0"
 alloy-sol-macro = { version = "0.8" }
 alloy = { version = "0.3" }
+alloy-rlp = "0.3.4"
 alloy-rpc-types = { version = "0.3", default-features = false, features = [
     "eth",
 ] }

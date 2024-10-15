@@ -247,7 +247,10 @@ async fn find_best_l1_block(validator_set: Vec<Validator>, rpc_url: &str) -> u64
         max_block = latest_block;
     }
 
-    println!("Choosing L1 block to generate proof against: {}, latest: {}", max_block, latest_block);
+    println!(
+        "Choosing L1 block to generate proof against: {}, latest: {}",
+        max_block, latest_block
+    );
 
     // TODO: Make sure no staking event happened after this block
     max_block

@@ -20,3 +20,6 @@ pgo-data.profdata
 .env
 
 **/l2data/**
+
+# vscode
+.vscode

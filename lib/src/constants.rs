@@ -3,7 +3,7 @@ use alloy_primitives::{address, Address};
 // final aggregation vk: 0x00c7dca51c03c7b4db25b4c342d4178b8e7e1107dbcbf246c372a91c2950a068
 
 /// Address of the caller.
-pub const CALLER: Address = address!("70997970c51812dc3a010c7d01b50e0d17dc79c8");
+pub const CALLER: Address = address!("49277ee36a024120ee218127354c4a3591dc90a9");
 pub const CALLER_L1: Address = address!("0000000000000000000000000000000000000000");
 
 pub const BLOCK_VK: [u32; 8] = [929047547, 1726340318, 938409146, 813681569, 513468175, 1108044662, 1457441407, 1995556418];

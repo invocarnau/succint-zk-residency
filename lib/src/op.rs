@@ -70,3 +70,14 @@ pub struct OPConsensusCommit {
     pub prev_l2_block_hash: B256,
     pub new_l2_block_hash: B256,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChainProofOPInput {
+    pub prev_l2_block_hash: B256,
+    pub new_l2_block_hash: B256,
+    pub l1_block_hash: B256,
+    pub new_ler: B256,
+    pub l1_ger_addr: Address,
+    pub l2_ger_addr: Address,
+    pub game_factory_address: Address
+}

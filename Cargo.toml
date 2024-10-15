@@ -14,6 +14,8 @@ members = [
     # "script",
     "op/consensus/client",
     "op/consensus/host",
+    "op/chain-proof/client",
+    "op/chain-proof/host",
 ]
 resolver = "2"
 

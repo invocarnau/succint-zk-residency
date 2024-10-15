@@ -1,0 +1,12 @@
+[package]
+name = "op-chain-proof-client"
+version = "1.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+bincode.workspace = true
+sp1-zkvm.workspace = true
+polccint-lib = { path = "../../../lib" }
+sha2.workspace = true
+alloy-primitives.workspace = true

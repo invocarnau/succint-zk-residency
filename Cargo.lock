@@ -3912,6 +3912,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "op-chain-proof-client"
+version = "1.1.0"
+dependencies = [
+ "alloy-primitives 0.8.5",
+ "bincode",
+ "polccint-lib",
+ "sha2",
+ "sp1-zkvm",
+]
+
+[[package]]
+name = "op-chain-proof-host"
+version = "1.1.0"
+
+[[package]]
 name = "op-consensus-host"
 version = "0.1.0"
 dependencies = [

@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
+	"os"
 
 	"github.com/ethereum-optimism/optimism/op-e2e/bindings"
 	"github.com/ethereum-optimism/optimism/op-service/eth"
@@ -12,60 +14,107 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/invocarnau/succint-zk-residency/fep-type-1/e2etest/opfaultdisputegame"
+	"github.com/urfave/cli/v2"
 )
 
 const (
-	l1URL = "http://localhost:8545"
-	l2URL = "http://localhost:9545"
-)
-
-var (
-	disputeGameFactoryProxyAddr = common.HexToAddress("0x5e8176772863842cd9d692c9E793dc4958626E69")
+	getGameInfoFlagName = "get-game-info"
+	l1RPCFlagName       = "l1-rpc"
+	l2RPCFlagName       = "l2-rpc"
+	gameFactoryFlagName = "game-factory"
+	lastNGamesFlagName  = "last-n-games"
 )
 
 func main() {
-	listCommitsToL1()
-}
+	app := cli.NewApp()
+	app.Name = "OP getter"
+	app.Version = "v0.0.1"
+	app.Commands = []*cli.Command{
+		{
+			Name:    getGameInfoFlagName,
+			Aliases: []string{"run", "gi"},
+			Usage:   "Get game info for the OP chain",
+			Action:  listCommitsToL1,
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:     l1RPCFlagName,
+					Aliases:  []string{"l1"},
+					Usage:    "URL of the L1 RPC",
+					Required: true,
+				},
+				&cli.StringFlag{
+					Name:     l2RPCFlagName,
+					Aliases:  []string{"l2"},
+					Usage:    "URL of the L2 RPC",
+					Required: true,
+				},
+				&cli.StringFlag{
+					Name:     gameFactoryFlagName,
+					Aliases:  []string{"gf", "disputeGameFactoryProxyAddr"},
+					Usage:    "Address of the L1 DisputeGameFactoryProxy address",
+					Required: true,
+				},
+				&cli.IntFlag{
+					Name:     lastNGamesFlagName,
+					Aliases:  []string{"n"},
+					Usage:    "Specify the amount of games to list (from last game -n to last game)",
+					Required: false,
+				},
+			},
+		},
+	}
 
-func listCommitsToL1() {
-	clientL1, err := ethclient.Dial(l1URL)
+	err := app.Run(os.Args)
 	if err != nil {
 		panic(err)
+	}
+}
+
+func listCommitsToL1(cliCtx *cli.Context) error {
+	l1URL := cliCtx.String(l1RPCFlagName)
+	l2URL := cliCtx.String(l2RPCFlagName)
+	disputeGameFactoryProxyAddr := common.HexToAddress(cliCtx.String(gameFactoryFlagName)) // Added for game factory address
+	lastNGames := cliCtx.Int(lastNGamesFlagName)                                           // Added for last n games
+	fmt.Printf("Getting %d games from %s\n", lastNGames, disputeGameFactoryProxyAddr.Hex())
+
+	clientL1, err := ethclient.Dial(l1URL)
+	if err != nil {
+		return err
 	}
 	clientL2, err := ethclient.Dial(l2URL)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	gameFactory, err := bindings.NewDisputeGameFactory(disputeGameFactoryProxyAddr, clientL1)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	gameCounter, err := gameFactory.GameCount(nil)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	for i := 2; i < int(gameCounter.Int64()); i++ {
+	for i := int(gameCounter.Int64()) - lastNGames; i < int(gameCounter.Int64()); i++ {
 		gameCreation, err := gameFactory.GameAtIndex(nil, big.NewInt(int64(i)))
 		if err != nil {
-			panic(err)
+			return err
 		}
 		gameContract, err := opfaultdisputegame.NewOpfulldisputegame(gameCreation.Proxy, clientL1)
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		// check game output
 		finalL2BlockNumber, err := gameContract.L2BlockNumber(nil)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		finalRoot, err := gameContract.RootClaim(nil)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		finalOutputV0, err := OutputV0AtBlock(context.Background(), clientL2, finalL2BlockNumber)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		expectedFinalRoot := eth.OutputRoot(finalOutputV0)
 		if finalRoot != expectedFinalRoot {
@@ -73,17 +122,17 @@ func listCommitsToL1() {
 			fmt.Printf("final block number: %+v\n", finalL2BlockNumber.Int64())
 			fmt.Printf("final claim root: %s\n", common.Hash(finalRoot).Hex())
 			fmt.Printf("expectedFinalRoot: %s\n", common.Hash(expectedFinalRoot).Hex())
-			panic("RootHash does not match")
+			return errors.New("RootHash does not match")
 		}
 
 		// check game starting root
 		initialL2Info, err := gameContract.StartingOutputRoot(nil)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		initialOutputV0, err := OutputV0AtBlock(context.Background(), clientL2, initialL2Info.L2BlockNumber)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		expectedInitialRoot := eth.OutputRoot(initialOutputV0)
 		if initialL2Info.Root != expectedInitialRoot {
@@ -91,7 +140,7 @@ func listCommitsToL1() {
 			fmt.Printf("initial block number: %+v\n", initialL2Info.L2BlockNumber.Int64())
 			fmt.Printf("initial claim root: %s\n", common.Hash(initialL2Info.Root).Hex())
 			fmt.Printf("expectedInitialRoot: %s\n", common.Hash(expectedInitialRoot).Hex())
-			panic("RootHash does not match")
+			return errors.New("RootHash does not match")
 		}
 
 		fmt.Printf(`
@@ -124,6 +173,7 @@ Game %d
 			common.Hash(finalRoot).Hex(),                              // Claim root
 		)
 	}
+	return nil
 }
 
 func OutputV0AtBlock(ctx context.Context, client *ethclient.Client, blockNum *big.Int) (*eth.OutputV0, error) {

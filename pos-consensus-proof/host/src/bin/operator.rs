@@ -241,16 +241,13 @@ async fn find_best_l1_block(validator_set: Vec<Validator>, rpc_url: &str) -> u64
     let provider = Provider::<Http>::try_from(rpc_url).unwrap();
     let latest_block = provider.get_block_number().await.unwrap().as_u64();
 
-    println!("Got latest block: {}", latest_block);
-
     // Because we can only access last 256 blocks in solidity, if the max_block is beyond that, use
     // the latest one.
     if max_block < latest_block - 256 {
-        println!("Choosing latest block as last updated block is beyond 256");
         max_block = latest_block;
     }
 
-    println!("Choosing L1 block number: {}", max_block);
+    println!("Choosing L1 block to generate proof against: {}, latest: {}", max_block, latest_block);
 
     // TODO: Make sure no staking event happened after this block
     max_block

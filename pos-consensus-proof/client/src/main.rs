@@ -38,7 +38,8 @@ fn main() {
 
     // Encode the public values
     let bytes = PublicValuesStruct::abi_encode_packed(&PublicValuesStruct {
-        bor_block_hash: outputs.bor_block_hash,
+        prev_bor_block_hash: outputs.prev_bor_hash,
+        new_bor_block_hash: outputs.new_bor_hash,
         l1_block_hash: outputs.l1_block_hash,
     });
 

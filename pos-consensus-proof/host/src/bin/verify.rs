@@ -38,7 +38,7 @@ pub async fn send_proof_onchain(proof: SP1ProofWithPublicValues) -> eyre::Result
     // Construct the on-chain call and relay the proof to the contract.
     let call_data = ConsensusProofVerifier::verifyConsensusProofCall {
         _proofBytes: proof.bytes().into(),
-        bor_block_hash: vals.bor_block_hash,
+        new_bor_block_hash: vals.new_bor_block_hash,
         l1_block_hash: vals.l1_block_hash,
     }
     .abi_encode();

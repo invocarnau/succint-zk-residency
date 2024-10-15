@@ -86,15 +86,15 @@ contract ConsensusProofVerifier {
 
     /// @notice The entrypoint for the verifier.
     /// @param _proofBytes The encoded proof.
-    /// @param bor_block_hash The bor block hash to be verified.
+    /// @param new_bor_block_hash The bor block hash to be verified.
     /// @param l1_block_hash The l1 block hash for anchor.
     function verifyConsensusProof(
         bytes calldata _proofBytes, 
-        bytes32 bor_block_hash, 
+        bytes32 new_bor_block_hash, 
         bytes32 l1_block_hash
     ) public {
-        bytes memory publicValues = abi.encodePacked(bor_block_hash, l1_block_hash);
+        bytes memory publicValues = abi.encodePacked(lastVerifiedBorBlockHash, new_bor_block_hash, l1_block_hash);
         ISP1Verifier(verifier).verifyProof(consensusProofVKey, publicValues, _proofBytes);
-        lastVerifiedBorBlockHash = bor_block_hash;
+        lastVerifiedBorBlockHash = new_bor_block_hash;
     }
 }

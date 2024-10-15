@@ -11,7 +11,8 @@ use sp1_cc_client_executor::{io::EVMStateSketch, ClientExecutor, ContractInput};
 sol! {
     /// The public values encoded as a struct that can be easily deserialized inside Solidity.
     struct PublicValuesStruct {
-        bytes32 bor_block_hash;
+        bytes32 prev_bor_block_hash;
+        bytes32 new_bor_block_hash;
         bytes32 l1_block_hash;
     }
 }
@@ -19,7 +20,7 @@ sol! {
 sol! {
     contract ConsensusProofVerifier {
         bytes32 public lastVerifiedBorBlockHash;
-        function verifyConsensusProof(bytes calldata _proofBytes, bytes32 bor_block_hash, bytes32 l1_block_hash) public view;
+        function verifyConsensusProof(bytes calldata _proofBytes, bytes32 new_bor_block_hash, bytes32 l1_block_hash) public view;
         function getEncodedValidatorInfo() public view returns(address[] memory, uint256[] memory, uint256);
     }
 }
@@ -44,7 +45,8 @@ pub struct MilestoneProofInputs {
 
 #[derive(Clone, Debug)]
 pub struct MilestoneProofOutputs {
-    pub bor_block_hash: FixedBytes<32>,
+    pub prev_bor_hash: FixedBytes<32>,
+    pub new_bor_hash: FixedBytes<32>,
     pub l1_block_hash: FixedBytes<32>,
 }
 
@@ -182,7 +184,8 @@ impl MilestoneProver {
         }
 
         MilestoneProofOutputs {
-            bor_block_hash,
+            prev_bor_hash: prev_bor_hash,
+            new_bor_hash: bor_block_hash,
             l1_block_hash: self.inputs.l1_block_hash,
         }
     }

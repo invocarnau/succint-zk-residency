@@ -1,8 +1,6 @@
 use clap::Parser;
 use sp1_sdk::{SP1Proof, HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWithPublicValues, SP1VerifyingKey};
-mod cli;
-use cli::ProviderArgs;
-use polccint_lib::{ChainProof, AggLayerProof};
+use polccint_lib::{ChainProof, AggLayerProof, ChainProofSolidity};
 use polccint_lib::bridge::{BridgeCommit};
 use polccint_lib::fep_type_1::{BlockAggregationCommit};
 
@@ -18,28 +16,22 @@ use serde::{Serialize, Deserialize};
 struct Args {
     /// The block number of the block to execute.
     #[clap(long)]
-    proof_number: u64,
-    #[clap(flatten)]
-    provider: ProviderArgs,
+    network_id: u64,
+
     #[clap(long)]
-    proof_range: u64,
+    network_range: u64,
 
     /// Whether or not to generate a proof.
     #[arg(long, default_value_t = false)]
     prove: bool,
 }
 
-const ELF_CHAIN_PROOF: &[u8] = include_bytes!("../../../elf/aggregation-final");
+const ELF_CHAIN_PROOF: &[u8] = include_bytes!("../../../elf/chain-proof-fep");
 const ELF_AGGLAYER_PROOF: &[u8] = include_bytes!("../../../elf/agglayer-proof");
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct SP1FinalAggregationProofFixture {
-    pub prev_l2_block_hash: String,
-    pub new_l2_block_hash: String,
-    pub l1_block_hash: String,
-    pub new_ler: String,
-    pub l1_ger_addr: String,
-    pub l2_ger_addr: String,
+    pub chain_proofs: Vec<ChainProofSolidity>,
     pub vkey: String,
     pub public_values: String,
     pub proof: String,
@@ -65,9 +57,6 @@ async fn main() -> eyre::Result<()> {
     // Parse the command line arguments.
     let args = Args::parse();
 
-    // Load the input from the cache.
-    let provider_config = args.provider.into_provider().await?;
-
     // Generate the proof.
     let client = ProverClient::new();
 
@@ -75,21 +64,22 @@ async fn main() -> eyre::Result<()> {
     let (_,chain_vk) = client.setup(ELF_CHAIN_PROOF);
     let (agglayer_proof_pk, agglayer_proof_vk) = client.setup(ELF_AGGLAYER_PROOF);
 
-    let initial_proof_number = args.proof_number;
-    let proof_range = args.proof_range; // hardcode for now TODO
-    let final_proof_number = initial_proof_number + proof_range;
+    let initial_network_id = args.network_id;
+    let network_range = args.network_range; // hardcode for now TODO
+    let final_network_id = initial_network_id + network_range;
 
     // assert constant vk with elf vk 
     assert!(chain_vk.hash_u32() == CHAIN_VK);
 
     let mut inputs: Vec<AggregationInput> = Vec::new();
 
-    for proof_number in initial_proof_number..final_proof_number + 1 {
+    for network_id in initial_network_id..final_network_id + 1 {
+   
         let proof: SP1ProofWithPublicValues = SP1ProofWithPublicValues::load(
             PathBuf::from(env!("CARGO_MANIFEST_DIR"))
                 .join(format!(
-                    "../../proof/proof_{}.bin",
-                    proof_number
+                    "../../chain-proofs/proof_chain_{}.bin",
+                    network_id
                 ))
         ).expect("failed to load proof");
         
@@ -109,6 +99,7 @@ async fn main() -> eyre::Result<()> {
          .map(|input| input.proof.public_values.clone().read::<ChainProof>())
          .collect::<Vec<_>>(),
      };
+     
      stdin.write(&aggregation_input);
  
      // write proofs
@@ -134,14 +125,18 @@ async fn main() -> eyre::Result<()> {
 
         client.verify(&proof, &agglayer_proof_vk).expect("proof verification should succeed");
         // Handle the result of the save operation
-        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../agglayer_proofs/aggregation_from_{}_to_{}_proof.bin", initial_proof_number, final_proof_number))) {
+
+        let fixture_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../agglayer_proofs");
+        std::fs::create_dir_all(&fixture_path).expect("failed to create fixture path");
+
+        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../agglayer_proofs/aggregation_from_{}_to_{}_proof.bin", initial_network_id, final_network_id))) {
             Ok(_) => println!("Proof saved successfully."),
             Err(e) => eprintln!("Failed to save proof: {}", e),
         }
 
         let public_values_solidity_encoded = proof.public_values.as_slice();
-        println!("public valiues in scirpt {:?}", hex::encode(public_values_solidity_encoded));
-        let decoded_values = AggLayerProofSolidity::abi_decode(public_values_solidity_encoded, true).unwrap();
+        let decoded_values: AggLayerProofSolidity = AggLayerProofSolidity::abi_decode(public_values_solidity_encoded, true).unwrap();
+
 
         // println!("Decoded public values:");
         // println!("prev_l2_block_hash: 0x{}", decoded_values.prev_l2_block_hash);
@@ -151,25 +146,19 @@ async fn main() -> eyre::Result<()> {
         // println!("l1_ger_addr: {}", decoded_values.l1_ger_addr);
         // println!("l2_ger_addr: {}", decoded_values.l2_ger_addr);
 
-        // let fixture = SP1FinalAggregationProofFixture {
-        //     prev_l2_block_hash: format!("{}", decoded_values.prev_l2_block_hash),
-        //     new_l2_block_hash: format!("{}", decoded_values.new_l2_block_hash),
-        //     l1_block_hash: format!("{}", decoded_values.l1_block_hash),
-        //     new_ler: format!("{}", decoded_values.new_ler),
-        //     l1_ger_addr: decoded_values.l1_ger_addr.to_string(),
-        //     l2_ger_addr: decoded_values.l2_ger_addr.to_string(),
-        //     vkey: final_aggregation_vk.bytes32().to_string(),
-        //     public_values: format!("0x{}", hex::encode(public_values_solidity_encoded)),
-        //     proof: format!("0x{}", hex::encode(proof.bytes())),
-        // };
+        let fixture = SP1FinalAggregationProofFixture {
+            chain_proofs: decoded_values.chain_proofs,
+            vkey: agglayer_proof_vk.bytes32().to_string(),
+            public_values: format!("0x{}", hex::encode(public_values_solidity_encoded)),
+            proof: format!("0x{}", hex::encode(proof.bytes())),
+        };
 
-        // let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../fixtures");
-        // std::fs::create_dir_all(&fixture_path).expect("failed to create fixture path");
-        // std::fs::write(
-        //     fixture_path.join(format!("{:?}-fixture.json", "proof_final_aggregation").to_lowercase()),
-        //     serde_json::to_string_pretty(&fixture).unwrap(),
-        // )
-        // .expect("failed to write fixture");
+       
+        std::fs::write(
+            fixture_path.join(format!("aggregation_from_{}_to_{}_proof.json", initial_network_id, final_network_id).to_lowercase()),
+            serde_json::to_string_pretty(&fixture).unwrap(),
+        )
+        .expect("failed to write fixture");
 
     }
     Ok(())

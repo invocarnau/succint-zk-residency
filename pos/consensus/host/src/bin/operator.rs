@@ -16,7 +16,8 @@ use reth_primitives::{hex, Header};
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::HostExecutor;
 
-use pos_consensus_proof_client::milestone::{ConsensusProofVerifier, MilestoneProofInputs};
+use polccint_lib::pos_consensus::{ConsensusProofVerifier, PoSConsensusInput};
+
 use pos_consensus_proof_client::{types, types::heimdall_types};
 use pos_consensus_proof_host::types::{Precommit, Validator};
 use pos_consensus_proof_host::utils::PosClient;
@@ -44,7 +45,7 @@ async fn main() -> eyre::Result<()> {
     let prover = ConsensusProver::new();
 
     println!("Assembling data for generating proof...");
-    let inputs: MilestoneProofInputs = generate_inputs(args).await?;
+    let inputs = generate_inputs(args).await?;
 
     println!("Starting to generate proof...");
     let proof = prover.generate_consensus_proof(inputs);
@@ -58,7 +59,7 @@ async fn main() -> eyre::Result<()> {
     Ok(())
 }
 
-pub async fn generate_inputs(args: Args) -> eyre::Result<MilestoneProofInputs> {
+pub async fn generate_inputs(args: Args) -> eyre::Result<PoSConsensusInput> {
     let client = PosClient::default();
 
     let milestone = client
@@ -179,7 +180,7 @@ pub async fn generate_inputs(args: Args) -> eyre::Result<MilestoneProofInputs> {
         );
     }
 
-    Ok(MilestoneProofInputs {
+    Ok(PoSConsensusInput {
         tx_data: tx.result.tx,
         tx_hash: FixedBytes::from_str(&tx.result.hash).unwrap(),
         precommits,

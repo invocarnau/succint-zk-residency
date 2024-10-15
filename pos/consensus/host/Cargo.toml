@@ -47,6 +47,8 @@ alloy-sol-macro.workspace = true
 alloy.workspace = true
 alloy-rpc-types.workspace = true
 
+polccint-lib = { path = "../../../lib" }
+
 [build-dependencies]
 prost-build = "0.13.1"
 sp1-build = "2.0.0"

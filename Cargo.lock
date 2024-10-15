@@ -4994,6 +4994,7 @@ dependencies = [
  "dotenv",
  "ethers",
  "eyre",
+ "polccint-lib",
  "pos-consensus-proof-client",
  "prost-build",
  "prost-types 0.13.3",

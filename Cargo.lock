@@ -50,6 +50,46 @@ dependencies = [
 ]
 
 [[package]]
+name = "agglayer-proof-client"
+version = "1.1.0"
+dependencies = [
+ "alloy-primitives 0.8.5",
+ "alloy-sol-types 0.8.5",
+ "bincode",
+ "polccint-lib",
+ "sha2",
+ "sp1-zkvm",
+]
+
+[[package]]
+name = "agglayer-proof-host"
+version = "0.1.0"
+dependencies = [
+ "alloy",
+ "alloy-primitives 0.8.5",
+ "alloy-provider",
+ "alloy-rpc-types",
+ "alloy-sol-macro 0.8.5",
+ "alloy-sol-types 0.8.5",
+ "bincode",
+ "clap",
+ "dotenv",
+ "eyre",
+ "polccint-lib",
+ "reth-primitives",
+ "rsp-client-executor 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
+ "rsp-host-executor",
+ "serde",
+ "serde_json",
+ "sp1-build",
+ "sp1-cc-client-executor",
+ "sp1-cc-host-executor",
+ "sp1-sdk",
+ "tokio",
+ "url",
+]
+
+[[package]]
 name = "aggregation-final-client"
 version = "1.1.0"
 dependencies = [

@@ -1,15 +1,13 @@
 use alloy_provider::ReqwestProvider;
 use clap::Parser;
-use rsp_client_executor::{io::WitnessInput, ChainVariant, CHAIN_ID_ETH_MAINNET};
+use rsp_client_executor::{ChainVariant, CHAIN_ID_ETH_MAINNET};
 use rsp_host_executor::HostExecutor;
-use sp1_sdk::{HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWithPublicValues};
+use sp1_sdk::{utils, ProverClient, SP1Stdin, SP1ProofWithPublicValues};
 use std::path::PathBuf;
 mod cli;
 use cli::ProviderArgs;
 use url::Url;
-use polccint_lib::{BlockCommit, SP1CCProofFixture};
-use alloy::hex;
-use std::io::Read;
+use polccint_lib::fep_type_1::BlockCommit;
 
 #[derive(Parser, Debug)]
 struct Args {

@@ -1,19 +1,14 @@
-use alloy_provider::ReqwestProvider;
 use clap::Parser;
-use rsp_client_executor::{ChainVariant, CHAIN_ID_ETH_MAINNET};
-use rsp_host_executor::HostExecutor;
-use sp1_sdk::{SP1Proof, HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWithPublicValues, SP1VerifyingKey};
+use sp1_sdk::{SP1Proof, HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWithPublicValues};
 mod cli;
 use cli::ProviderArgs;
-use url::Url;
-use polccint_lib::{BridgeCommit, BlockCommit, BlockAggregationInput, BlockAggregationCommit, FinalAggregationInput, u32_array_to_hex};
-use alloy_rpc_types::BlockNumberOrTag;
-use alloy_primitives::{address, Address};
+use polccint_lib::{ChainProof};
+use polccint_lib::bridge::{BridgeCommit};
+use polccint_lib::fep_type_1::{BlockAggregationCommit};
+
 use alloy::hex;
-use sp1_cc_host_executor::HostExecutor  as StaticCallHostExecutor;
-use sp1_cc_client_executor::{ContractInput};
 use std::path::PathBuf;
-use polccint_lib::PublicValuesFinalAggregationSolidity;
+use polccint_lib::ChainProofSolidity;
 use alloy_sol_types::SolType;
 // import constants from lib
 use polccint_lib::constants::{BRIDGE_VK, AGGREGATION_VK};
@@ -38,14 +33,6 @@ const ELF_BLOCK_AGGREGATION: &[u8] = include_bytes!("../../../../elf/block-aggre
 const ELF_BRIDGE: &[u8] = include_bytes!("../../../../elf/bridge");
 const ELF_FINAL_AGGREGATION: &[u8] = include_bytes!("../../../../elf/aggregation-final");
 
-
-/// An input to the aggregation program.
-///
-/// Consists of a proof and a verification key.
-struct AggregationInput {
-    pub proof: SP1ProofWithPublicValues,
-    pub vk: SP1VerifyingKey,
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct SP1FinalAggregationProofFixture {
@@ -83,8 +70,8 @@ async fn main() -> eyre::Result<()> {
     let client = ProverClient::new();
 
     // Setup the proving and verifying keys.
-    let (aggregation_pk,aggregation_vk) = client.setup(ELF_BLOCK_AGGREGATION);
-    let (bridge_pk, bridge_vk) = client.setup(ELF_BRIDGE);
+    let (_,aggregation_vk) = client.setup(ELF_BLOCK_AGGREGATION);
+    let (_, bridge_vk) = client.setup(ELF_BRIDGE);
     let (final_aggregation_pk, final_aggregation_vk) = client.setup(ELF_FINAL_AGGREGATION);
 
     let initial_block_number = args.block_number;
@@ -109,13 +96,27 @@ async fn main() -> eyre::Result<()> {
     // println!("proof_bridge: {:?}", proof_bridge.public_values.clone().read::<BridgeCommit>());
     // println!("proof_aggregation: {:?}", proof_aggregation.public_values.clone().read::<BlockAggregationCommit>());
 
-
     // encode aggregation input and write to stdin
     let mut stdin_final_aggregation = SP1Stdin::new();
-    let final_aggregation_input: FinalAggregationInput = FinalAggregationInput {
-        block_aggregation_commit: proof_aggregation.public_values.clone().read::<BlockAggregationCommit>(),
-        bridge_commit:proof_bridge.public_values.clone().read::<BridgeCommit>()
+ 
+    // First, read the necessary values from proof_aggregation and proof_bridge
+    let block_aggregation_commit = proof_aggregation.public_values.clone().read::<BlockAggregationCommit>();
+    let bridge_commit = proof_bridge.public_values.clone().read::<BridgeCommit>();
+
+    assert!(bridge_commit.prev_l2_block_hash == block_aggregation_commit.prev_l2_block_hash);
+    assert!(bridge_commit.new_l2_block_hash == block_aggregation_commit.new_l2_block_hash);
+
+    // Now, fill the ChainProof struct using the values we just read
+    let final_aggregation_input: ChainProof = ChainProof {
+        prev_l2_block_hash: bridge_commit.prev_l2_block_hash,
+        new_l2_block_hash: bridge_commit.new_l2_block_hash,
+        l1_block_hash: bridge_commit.l1_block_hash,
+        new_ler: bridge_commit.new_ler,
+        l1_ger_addr: bridge_commit.l1_ger_addr,
+        l2_ger_addr: bridge_commit.l2_ger_addr,
+        consensus_hash: bridge_commit.prev_l2_block_hash,  // TODO this is mocked!!
     };
+
     stdin_final_aggregation.write(&final_aggregation_input);
 
     // write proofs
@@ -157,7 +158,7 @@ async fn main() -> eyre::Result<()> {
 
         let public_values_solidity_encoded = proof.public_values.as_slice();
         println!("public valiues in scirpt {:?}", hex::encode(public_values_solidity_encoded));
-        let decoded_values = PublicValuesFinalAggregationSolidity::abi_decode(public_values_solidity_encoded, true).unwrap();
+        let decoded_values = ChainProofSolidity::abi_decode(public_values_solidity_encoded, true).unwrap();
 
         println!("Decoded public values:");
         println!("prev_l2_block_hash: 0x{}", decoded_values.prev_l2_block_hash);
@@ -192,21 +193,4 @@ async fn main() -> eyre::Result<()> {
 }
 
 
-// Generate a `SP1CCProofFixture`, and save it as a json file.
-//
-// This is useful for verifying the proof of contract call execution on chain.
-//fn save_fixture(vkey: String, proof: &SP1ProofWithPublicValues) {
-    // let fixture = SP1CCProofFixture {
-    //     vkey,
-    //     public_values: format!("0x{}", hex::encode(proof.public_values.as_slice())),
-    //     proof: format!("0x{}", hex::encode(proof.bytes())),
-    // };
 
-    // let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../contracts/src/fixtures");
-    // std::fs::create_dir_all(&fixture_path).expect("failed to create fixture path");
-    // std::fs::write(
-    //     fixture_path.join("plonk-fixture.json".to_lowercase()),
-    //     serde_json::to_string_pretty(&fixture).unwrap(),
-    // )
-    // .expect("failed to write fixture");
-//}

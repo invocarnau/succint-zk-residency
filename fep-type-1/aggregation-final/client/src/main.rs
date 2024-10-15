@@ -59,7 +59,7 @@ pub fn main() {
         new_ler: input.new_ler,
         l1_ger_addr: input.l1_ger_addr,
         l2_ger_addr: input.l2_ger_addr, 
-        consensusHash: input.consensus_hash
+        consensus_hash: input.consensus_hash
     };
 
     // note that consensus hash is not used 

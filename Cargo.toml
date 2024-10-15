@@ -9,6 +9,8 @@ members = [
     "fep-type-1/aggregation-final/host",
     "bridge/client",
     "bridge/host",
+    "agglayer-proof/host",
+    "agglayer-proof/client",
     # "script",
 ]
 resolver = "2"

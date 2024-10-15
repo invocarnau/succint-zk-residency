@@ -1,0 +1,3 @@
+[submodule "pos-consensus-proof/contracts/lib/forge-std"]
+	path = pos-consensus-proof/contracts/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std

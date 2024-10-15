@@ -20,5 +20,7 @@ alloy-primitives.workspace = true
 alloy-rlp.workspace = true
 alloy-sol-types.workspace = true
 
+polccint-lib = { path = "../../../lib" }
+
 [build-dependencies]
 prost-build = "0.13.1"

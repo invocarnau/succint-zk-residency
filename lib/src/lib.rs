@@ -1,11 +1,11 @@
-use alloy_primitives::{B256, Address};
-use serde::{Deserialize, Serialize};
+use alloy_primitives::{Address, B256};
 use alloy_sol_types::sol;
+use serde::{Deserialize, Serialize};
 
-pub mod constants;
 pub mod bridge;
+pub mod constants;
 pub mod fep_type_1;
-
+pub mod pos_consensus;
 
 pub mod op;
 
@@ -17,16 +17,13 @@ pub struct ChainProof {
     pub new_ler: B256,
     pub l1_ger_addr: Address,
     pub l2_ger_addr: Address,
-    pub consensus_hash: B256
+    pub consensus_hash: B256,
 }
-
-
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AggLayerProof {
-    pub chain_proofs: Vec<ChainProof>, 
+    pub chain_proofs: Vec<ChainProof>,
 }
-
 
 sol! {
     #[derive(Debug, Serialize, Deserialize)]
@@ -36,14 +33,12 @@ sol! {
         bytes32 l1_block_hash;
         bytes32 new_ler;
         address l1_ger_addr;
-        address l2_ger_addr;  
-        bytes32 consensus_hash;    
+        address l2_ger_addr;
+        bytes32 consensus_hash;
     }
 
     #[derive(Debug, Serialize, Deserialize)]
     struct AggLayerProofSolidity {
-        ChainProofSolidity[] chain_proofs; 
+        ChainProofSolidity[] chain_proofs;
     }
 }
-
-

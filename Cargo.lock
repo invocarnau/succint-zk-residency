@@ -1637,6 +1637,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1462739cb27611015575c0c11df5df7601141071f07518d56fcc1be504cbec97"
 
 [[package]]
+name = "client"
+version = "0.1.0"
+
+[[package]]
 name = "cobs"
 version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3195,6 +3199,10 @@ checksum = "e3d1354bf6b7235cb4a0576c2619fd4ed18183f689b12b006a0ee7329eeff9a5"
 dependencies = [
  "windows-sys 0.52.0",
 ]
+
+[[package]]
+name = "host"
+version = "0.1.0"
 
 [[package]]
 name = "http"
@@ -4960,6 +4968,7 @@ dependencies = [
  "base64 0.22.1",
  "bincode",
  "bytes",
+ "polccint-lib",
  "prost 0.13.3",
  "prost-build",
  "prost-types 0.13.3",

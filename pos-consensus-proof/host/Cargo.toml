@@ -1,0 +1,52 @@
+[package]
+name = "pos-consensus-proof-host"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "vkey"
+path = "src/bin/vkey.rs"
+
+[[bin]]
+name = "verify"
+path = "src/bin/verify.rs"
+
+[[bin]]
+name = "operator"
+path = "src/bin/operator.rs"
+
+[dependencies]
+pos-consensus-proof-client = { path = "../client" }
+
+serde_json.workspace = true
+serde.workspace = true
+tokio.workspace = true
+reqwest.workspace = true
+eyre.workspace = true
+ethers.workspace = true
+dotenv.workspace = true
+clap.workspace = true
+bincode.workspace = true
+prost-types.workspace = true
+base64.workspace = true
+url.workspace = true
+
+# sp1
+sp1-sdk.workspace = true
+sp1-cc-client-executor.workspace = true
+sp1-cc-host-executor.workspace = true
+
+# reth
+reth-primitives.workspace = true
+
+# alloy
+alloy-provider.workspace = true
+alloy-primitives.workspace = true
+alloy-sol-types.workspace = true
+alloy-sol-macro.workspace = true
+alloy.workspace = true
+alloy-rpc-types.workspace = true
+
+[build-dependencies]
+prost-build = "0.13.1"
+sp1-build = "2.0.0"

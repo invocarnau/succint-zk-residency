@@ -9,11 +9,7 @@ use alloy_primitives::{Address, FixedBytes};
 use alloy_sol_types::SolType;
 use reth_primitives::Header;
 
-use milestone::{MilestoneProofInputs, MilestoneProver, PublicValuesStruct};
-
-pub mod helper;
-pub mod milestone;
-pub mod types;
+use pos_consensus_proof_client::milestone::{MilestoneProofInputs, MilestoneProver, PublicValuesStruct};
 
 fn main() {
     // Read inputs from the zkVM's stdin.

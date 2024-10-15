@@ -184,7 +184,7 @@ impl MilestoneProver {
         }
 
         MilestoneProofOutputs {
-            prev_bor_hash: prev_bor_hash,
+            prev_bor_hash,
             new_bor_hash: bor_block_hash,
             l1_block_hash: self.inputs.l1_block_hash,
         }

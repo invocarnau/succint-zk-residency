@@ -90,7 +90,7 @@ contract ConsensusProofVerifier {
     /// @param l1_block_hash The l1 block hash for anchor.
     function verifyConsensusProof(
         bytes calldata _proofBytes, 
-        bytes32 new_bor_block_hash, 
+        bytes32 new_bor_block_hash,
         bytes32 l1_block_hash
     ) public {
         bytes memory publicValues = abi.encodePacked(lastVerifiedBorBlockHash, new_bor_block_hash, l1_block_hash);

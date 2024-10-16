@@ -1,9 +1,10 @@
+# RSP uses a different version of rust than the rest of SP1,
+# so we need to use a different toolchain, which we achieve by
+# declaring an empty workspace.
 [package]
+version = "0.1.0"
 name = "op-chain-proof-host"
-version = "1.1.0"
 edition = "2021"
-publish = false
-
 
 [dependencies]
 # workspace

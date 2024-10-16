@@ -4965,7 +4965,11 @@ dependencies = [
 name = "pos-chain-proof-host"
 version = "0.1.0"
 dependencies = [
+ "clap",
+ "dotenv",
+ "eyre",
  "sp1-build",
+ "tokio",
 ]
 
 [[package]]

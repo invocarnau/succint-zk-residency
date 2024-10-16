@@ -2,13 +2,14 @@ use base64::{prelude::BASE64_STANDARD, Engine};
 use clap::Parser;
 
 use prost_types::Timestamp;
+use std::path::PathBuf;
 use std::str::FromStr;
 use url::Url;
 
 use ethers::providers::{Http, Middleware, Provider};
 
+use alloy_primitives::Address;
 use alloy_primitives::FixedBytes;
-use alloy_primitives::{address, Address};
 use alloy_provider::ReqwestProvider;
 use alloy_rpc_types::BlockNumberOrTag;
 use reth_primitives::{hex, Header};
@@ -16,6 +17,7 @@ use reth_primitives::{hex, Header};
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::HostExecutor;
 
+use polccint_lib::constants::CALLER;
 use polccint_lib::pos_consensus::{ConsensusProofVerifier, PoSConsensusInput};
 
 use pos_consensus_proof_client::{types, types::heimdall_types};
@@ -32,6 +34,9 @@ pub struct Args {
 
     #[clap(long)]
     milestone_hash: String,
+
+    #[arg(long, default_value_t = false)]
+    prove: bool,
 }
 
 #[tokio::main]
@@ -39,6 +44,8 @@ async fn main() -> eyre::Result<()> {
     dotenv::dotenv().ok();
 
     let args = Args::parse();
+    let prove = args.prove;
+    let id = args.milestone_id;
 
     // Setup the logger.
     sp1_sdk::utils::setup_logger();
@@ -47,14 +54,37 @@ async fn main() -> eyre::Result<()> {
     println!("Assembling data for generating proof...");
     let inputs = generate_inputs(args).await?;
 
-    println!("Starting to generate proof...");
-    let proof = prover.generate_consensus_proof(inputs);
+    println!("Executing the program...");
+    prover.execute(inputs.clone());
 
-    println!("Successfully generated proof: {:?}", proof.bytes());
-    println!("Public values: {:?}", proof.public_values.to_vec());
+    if prove {
+        // Prove
+        println!("Starting to generate proof...");
+        let proof = prover.generate_consensus_proof(inputs);
 
-    proof.save("proof.bin").expect("saving proof failed");
-    println!("Proof saved to proof.bin");
+        println!("Successfully generated proof: {:?}", proof.bytes());
+        println!("Public values: {:?}", proof.public_values.to_vec());
+
+        // Verify
+        prover.verify_consensus_proof(&proof);
+        println!("Proof verified!");
+
+        // Handle the result of the save operation
+        let fixture_path =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../consensus-proofs");
+        std::fs::create_dir_all(&fixture_path).expect("failed to create fixture path");
+
+        match proof.save(
+            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join(format!("../../../consensus-proofs/proof_{}.bin", id)),
+        ) {
+            Ok(_) => println!("Proof saved successfully."),
+            Err(e) => eprintln!("Failed to save proof: {}", e),
+        }
+        println!("Proof generation saved.");
+    } else {
+        println!("Proof generation skipped");
+    }
 
     Ok(())
 }
@@ -134,7 +164,7 @@ pub async fn generate_inputs(args: Args) -> eyre::Result<PoSConsensusInput> {
     let _response: ConsensusProofVerifier::getEncodedValidatorInfoReturn = host_executor
         .execute(ContractInput {
             contract_address: verifier_contract,
-            caller_address: address!("0000000000000000000000000000000000000000"),
+            caller_address: CALLER,
             calldata: call,
         })
         .await?;
@@ -144,7 +174,7 @@ pub async fn generate_inputs(args: Args) -> eyre::Result<PoSConsensusInput> {
     let response: ConsensusProofVerifier::lastVerifiedBorBlockHashReturn = host_executor
         .execute(ContractInput {
             contract_address: verifier_contract,
-            caller_address: address!("0000000000000000000000000000000000000000"),
+            caller_address: CALLER,
             calldata: call,
         })
         .await?;

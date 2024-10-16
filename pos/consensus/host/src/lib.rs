@@ -60,4 +60,20 @@ impl ConsensusProver {
             .verify(proof, &self.vkey)
             .expect("Failed to verify proof.");
     }
+
+    pub fn execute(&self, input: PoSConsensusInput) {
+        let mut stdin = SP1Stdin::new();
+        stdin.write(&input);
+
+        let (_, report) = self
+            .prover_client
+            .execute(&self.pkey.elf, stdin)
+            .run()
+            .unwrap();
+
+        println!(
+            "Finished executing the block in {} cycles",
+            report.total_instruction_count()
+        );
+    }
 }

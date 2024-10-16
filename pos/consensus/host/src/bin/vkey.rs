@@ -23,5 +23,9 @@ fn main() {
     let (_, vk) = client.setup(CONSENSUS_PROOF_ELF);
 
     // Print the verification key.
-    println!("Program Verification Key: {}", vk.bytes32());
+    println!(
+        "Program Verification Key: {}, Hash u32: {:?}",
+        vk.bytes32(),
+        vk.hash_u32()
+    );
 }

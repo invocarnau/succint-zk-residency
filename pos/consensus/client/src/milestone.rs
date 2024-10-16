@@ -3,16 +3,13 @@ use std::{collections::HashMap, str::FromStr};
 
 use bincode;
 
-use alloy_primitives::{address, keccak256, Address, Uint};
+use alloy_primitives::{keccak256, Address, Uint};
 use alloy_sol_types::SolCall;
+use polccint_lib::constants::CALLER;
 use polccint_lib::pos_consensus::{ConsensusProofVerifier, PoSConsensusCommit, PoSConsensusInput};
 use sp1_cc_client_executor::{io::EVMStateSketch, ClientExecutor, ContractInput};
 
 pub fn prove(input: PoSConsensusInput) -> PoSConsensusCommit {
-    let a: &str = "0x01Eb85F73dA540C66CE1d4262BF7F80d5BA6CF89";
-    let verifier_contract: Address = Address::from_str(a).unwrap();
-    let caller_address: Address = address!("0000000000000000000000000000000000000000");
-
     // Verify if the transaction data provided is actually correct or not
     let milestone = verify_tx_data(&input.tx_data, &input.tx_hash);
 
@@ -44,8 +41,8 @@ pub fn prove(input: PoSConsensusInput) -> PoSConsensusCommit {
     // active validator's info from L1.
     let call = ConsensusProofVerifier::getEncodedValidatorInfoCall {};
     let call_input = ContractInput {
-        contract_address: verifier_contract,
-        caller_address,
+        contract_address: input.stake_manager_address,
+        caller_address: CALLER,
         calldata: call.clone(),
     };
     let output = executor.execute(call_input).unwrap();
@@ -70,8 +67,8 @@ pub fn prove(input: PoSConsensusInput) -> PoSConsensusCommit {
     // last verified bor block hash.
     let call = ConsensusProofVerifier::lastVerifiedBorBlockHashCall {};
     let call_input = ContractInput {
-        contract_address: verifier_contract,
-        caller_address,
+        contract_address: input.stake_manager_address,
+        caller_address: CALLER,
         calldata: call.clone(),
     };
     let output = executor.execute(call_input).unwrap();
@@ -134,5 +131,6 @@ pub fn prove(input: PoSConsensusInput) -> PoSConsensusCommit {
         prev_bor_hash,
         new_bor_hash: bor_block_hash,
         l1_block_hash: input.l1_block_hash,
+        stake_manager_address: input.stake_manager_address,
     }
 }

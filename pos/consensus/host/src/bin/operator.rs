@@ -190,6 +190,7 @@ pub async fn generate_inputs(args: Args) -> eyre::Result<PoSConsensusInput> {
         prev_bor_header,
         state_sketch_bytes,
         l1_block_hash,
+        stake_manager_address: verifier_contract, // verifier interacts with stake manager
     })
 }
 

@@ -1,6 +1,12 @@
 [package]
-name = "client"
+name = "pos-chain-proof-client"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+bincode.workspace = true
+sha2.workspace = true
+sp1-zkvm.workspace = true
+alloy-primitives.workspace = true
+pos-consensus-proof-host = { path = "../../../pos/consensus/host" }
+polccint-lib = { path = "../../../lib" }

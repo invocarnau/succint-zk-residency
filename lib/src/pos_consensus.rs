@@ -1,13 +1,24 @@
-use alloy_primitives::{Address, FixedBytes};
-use alloy_sol_types::{sol, SolCall};
+use alloy_primitives::{Address, B256};
+use alloy_sol_types::sol;
 use reth_primitives::Header;
 use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChainProofPoSInput {
+    pub prev_l2_block_hash: B256,
+    pub new_l2_block_hash: B256,
+    pub l1_block_hash: B256,
+    pub new_ler: B256,
+    pub l1_ger_addr: Address,
+    pub l2_ger_addr: Address,
+    pub stake_manager_address: Address,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PoSConsensusInput {
     // heimdall related data
     pub tx_data: String,
-    pub tx_hash: FixedBytes<32>,
+    pub tx_hash: B256,
     pub precommits: Vec<Vec<u8>>,
     pub sigs: Vec<String>,
     pub signers: Vec<Address>,
@@ -18,14 +29,16 @@ pub struct PoSConsensusInput {
 
     // l1 related data
     pub state_sketch_bytes: Vec<u8>,
-    pub l1_block_hash: FixedBytes<32>,
+    pub l1_block_hash: B256,
+    pub stake_manager_address: Address,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PoSConsensusCommit {
-    pub prev_bor_hash: FixedBytes<32>,
-    pub new_bor_hash: FixedBytes<32>,
-    pub l1_block_hash: FixedBytes<32>,
+    pub prev_bor_hash: B256,
+    pub new_bor_hash: B256,
+    pub l1_block_hash: B256,
+    pub stake_manager_address: Address,
 }
 
 sol! {

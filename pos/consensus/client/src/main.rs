@@ -16,13 +16,6 @@ fn main() {
     // Calculate the milestone proof
     let commit = prove(input);
 
-    // Encode the public values from the commit
-    let bytes = PublicValuesStruct::abi_encode_packed(&PublicValuesStruct {
-        prev_bor_block_hash: commit.prev_bor_hash,
-        new_bor_block_hash: commit.new_bor_hash,
-        l1_block_hash: commit.l1_block_hash,
-    });
-
-    // Commit the values as bytes to be exposed to the verifier
-    sp1_zkvm::io::commit_slice(&bytes);
+    // Commit the values to be exposed to the verifier
+    sp1_zkvm::io::commit(&commit);
 }

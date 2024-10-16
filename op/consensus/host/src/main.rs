@@ -9,10 +9,11 @@ use alloy_provider::ReqwestProvider;
 use alloy_rpc_types::BlockNumberOrTag;
 use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::HostExecutor;
-use sp1_sdk::{utils, ProverClient, SP1ProofWithPublicValues, SP1Stdin};
+use sp1_sdk::{utils, HashableKey, ProverClient, SP1ProofWithPublicValues, SP1Stdin};
 use url::Url;
 use polccint_lib::{op::OpConsensusInput, op::RootClaimPreImage};
 use polccint_lib::constants::CALLER;
+use std::fs;
 
 sol! (
     interface GameFactory {
@@ -177,12 +178,21 @@ async fn main() -> eyre::Result<()> {
 
         client.verify(&proof, &vk).expect("proof verification should succeed");
         // Handle the result of the save operation
-        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../proof/chain{}/op_consensus_game_{}.bin", args.chain_id_l2.unwrap(), args.game_index))) {
+        let base_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!(
+            "../../proof/chain{}",
+            args.chain_id_l2.unwrap(),
+        ));
+        if !base_path.exists() {
+            fs::create_dir_all(base_path.clone()).expect("Failed to create directory");
+        }
+        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!(
+            "../../proof/chain{}/game_{}.bin",
+            args.chain_id_l2.unwrap(),
+            args.game_index,
+        ))) {
             Ok(_) => println!("Proof saved successfully."),
             Err(e) => eprintln!("Failed to save proof: {}", e),
         }
-
-        println!("Starting proof generation.");
     }
 
     Ok(())

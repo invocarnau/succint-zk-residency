@@ -1,6 +1,9 @@
 [package]
-name = "host"
+name = "pos-chain-proof-host"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+
+[build-dependencies]
+sp1-build = "2.0.0"

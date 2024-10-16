@@ -5,7 +5,7 @@ fn main() {
         &format!("../{}", "client"),
         BuildArgs {
             ignore_rust_version: true,
-            elf_name: "pos-consensus-proof".to_string(),
+            elf_name: "pos-chain".to_string(),
             ..Default::default()
         },
     );

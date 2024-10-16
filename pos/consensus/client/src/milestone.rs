@@ -1,9 +1,9 @@
 use crate::helper::*;
-use std::{collections::HashMap, str::FromStr};
+use std::collections::HashMap;
 
 use bincode;
 
-use alloy_primitives::{keccak256, Address, Uint};
+use alloy_primitives::{keccak256, Uint};
 use alloy_sol_types::SolCall;
 use polccint_lib::constants::CALLER;
 use polccint_lib::pos_consensus::{ConsensusProofVerifier, PoSConsensusCommit, PoSConsensusInput};

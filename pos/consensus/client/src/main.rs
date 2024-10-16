@@ -5,8 +5,7 @@
 #![no_main]
 sp1_zkvm::entrypoint!(main);
 
-use alloy_sol_types::SolType;
-use polccint_lib::pos_consensus::{PoSConsensusInput, PublicValuesStruct};
+use polccint_lib::pos_consensus::PoSConsensusInput;
 use pos_consensus_proof_client::milestone::prove;
 
 fn main() {

@@ -26,6 +26,4 @@ pub const CHAIN_VK: [u32; 8] = [
 ];
 
 // TODO: Update this with the correct vk
-pub const POS_CONSENSUS_VK: [u32; 8] = [
-    1280180439, 306164315, 280359417, 972354760, 1696891725, 921746366, 380532814, 247570928,
-];
+pub const POS_CONSENSUS_VK: [u32; 8] = [0, 0, 0, 0, 0, 0, 0, 0];

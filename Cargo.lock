@@ -4957,7 +4957,6 @@ dependencies = [
  "alloy-primitives 0.8.8",
  "bincode",
  "polccint-lib",
- "pos-consensus-proof-host",
  "sha2",
  "sp1-zkvm",
 ]

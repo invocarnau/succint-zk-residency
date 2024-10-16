@@ -8,5 +8,4 @@ bincode.workspace = true
 sha2.workspace = true
 sp1-zkvm.workspace = true
 alloy-primitives.workspace = true
-pos-consensus-proof-host = { path = "../../../pos/consensus/host" }
 polccint-lib = { path = "../../../lib" }

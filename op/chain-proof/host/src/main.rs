@@ -81,8 +81,7 @@ async fn main() -> eyre::Result<()> {
     let (chain_proof_pk, chain_proof_vk) = client.setup(ELF_CHAIN_PROOF);
 
     let initial_block_number = args.prev_block_number_l2;
-    let block_range = args.new_block_number_l2; // hardcode for now TODO
-    let final_block_number = initial_block_number + block_range;
+    let final_block_number = args.new_block_number_l2;
 
     // assert constant vk with elf vk
     println!("bridge vk {:?}", bridge_vk.hash_u32());
@@ -127,6 +126,7 @@ async fn main() -> eyre::Result<()> {
 
     assert!(bridge_commit.prev_l2_block_hash == consensus_commit.prev_l2_block_hash);
     assert!(bridge_commit.new_l2_block_hash == consensus_commit.new_l2_block_hash);
+    assert!(bridge_commit.l1_block_hash == consensus_commit.l1_block_hash);
 
     // Now, fill the ChainProof struct using the values we just read
     let chain_proof_input: ChainProofOPInput = ChainProofOPInput {
@@ -146,13 +146,13 @@ async fn main() -> eyre::Result<()> {
         panic!()
     };
     stdin_chain_proof.write_proof(proof, consensus_vk.vk);
-    println!("Finished writing proof",);
+    println!("Finished writing consensus proof",);
 
     let SP1Proof::Compressed(proof) = proof_bridge.proof else {
         panic!()
     };
     stdin_chain_proof.write_proof(proof, bridge_vk.vk);
-    println!("Finished writing proof",);
+    println!("Finished writing bridge proof",);
 
     // Only execute the program.
     let (_, execution_report) = client

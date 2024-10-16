@@ -7,6 +7,8 @@ members = [
     "fep-type-1/block-aggregation/host",
     "fep-type-1/aggregation-final/client",
     "fep-type-1/aggregation-final/host",
+    "fep-type-1/chain-proof/client",
+    "fep-type-1/chain-proof/host",
     "bridge/client",
     "bridge/host",
     "agglayer-proof/host",

@@ -214,7 +214,10 @@ async fn main() -> eyre::Result<()> {
 
         client.verify(&proof, &vk).expect("proof verification should succeed");
         // Handle the result of the save operation
-        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../../proof/chain{}/bridge_block_{}_to_{}_proof.bin", args.chain_id_l2.unwrap(), args.block_number_l2, args.block_number_l2 + args.block_range))) {
+        let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../proof/chain{}/", args.chain_id_l2.unwrap()));
+        std::fs::create_dir_all(&fixture_path).expect("failed to create fixture path");
+
+        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../proof/chain{}/bridge_block_{}_to_{}_proof.bin", args.chain_id_l2.unwrap(), args.block_number_l2, args.block_number_l2 + args.block_range))) {
             Ok(_) => println!("Proof saved successfully."),
             Err(e) => eprintln!("Failed to save proof: {}", e),
         }

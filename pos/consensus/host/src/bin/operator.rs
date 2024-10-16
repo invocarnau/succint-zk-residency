@@ -61,22 +61,19 @@ async fn main() -> eyre::Result<()> {
         // Prove
         println!("Starting to generate proof...");
         let proof = prover.generate_consensus_proof(inputs);
-
-        println!("Successfully generated proof: {:?}", proof.bytes());
-        println!("Public values: {:?}", proof.public_values.to_vec());
+        println!("Successfully generated proof!");
 
         // Verify
         prover.verify_consensus_proof(&proof);
         println!("Proof verified!");
 
         // Handle the result of the save operation
-        let fixture_path =
-            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../../consensus-proofs");
+        let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../proofs/consensus");
         std::fs::create_dir_all(&fixture_path).expect("failed to create fixture path");
 
         match proof.save(
             PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join(format!("../../../consensus-proofs/proof_{}.bin", id)),
+                .join(format!("../../proofs/consensus/milestone_{}.bin", id)),
         ) {
             Ok(_) => println!("Proof saved successfully."),
             Err(e) => eprintln!("Failed to save proof: {}", e),

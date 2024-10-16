@@ -47,7 +47,7 @@ impl ConsensusProver {
         let proof = self
             .prover_client
             .prove(&self.pkey, stdin)
-            .plonk()
+            .compressed()
             .run()
             .expect("Failed to execute.");
 

@@ -166,7 +166,7 @@ func generateProof(c *cli.Context) error {
 	}
 
 	// Generate aggregated chain proof
-	err = generateChainProof(l2ChainID, prevL2Block, l2Block)
+	err = generateChainProof(prevL2Block, l2Block)
 	if err != nil {
 		return err
 	}
@@ -211,7 +211,7 @@ func generateConsensusProof(l2ChainId uint64, milestoneId uint64, milestoneHash 
 	return nil
 }
 
-func generateChainProof(l2ChainId uint64, prevL2BlockNumber uint64, newL2BlockNumber uint64) error {
+func generateChainProof(prevL2BlockNumber uint64, newL2BlockNumber uint64) error {
 	// cargo run --release --bin main -- --prev-l2-block-number 13296845 --new-l2-block-number 13298032 --prove
 	proofCmd := fmt.Sprintf(
 		`cargo run --bin main --release -- --prev-l2-block-number %d --new-l2-block-number %d --prove`,

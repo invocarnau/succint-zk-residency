@@ -38,6 +38,12 @@ pub struct Args {
     #[clap(long)]
     l1_block_number: u64,
 
+    #[clap(long)]
+    prev_l2_block_number: u64,
+
+    #[clap(long)]
+    new_l2_block_number: u64,
+
     #[arg(long, default_value_t = false)]
     prove: bool,
 }
@@ -96,6 +102,8 @@ pub async fn generate_inputs(args: Args) -> eyre::Result<PoSConsensusInput> {
         .fetch_milestone_by_id(args.milestone_id)
         .await
         .expect("unable to fetch milestone");
+    assert_eq!(milestone.result.end_block, args.new_l2_block_number);
+
     let tx = client
         .fetch_tx_by_hash(args.milestone_hash)
         .await
@@ -196,6 +204,10 @@ pub async fn generate_inputs(args: Args) -> eyre::Result<PoSConsensusInput> {
             .fetch_bor_number_by_hash(prev_bor_block_hash)
             .await
             .unwrap();
+        assert_eq!(
+            prev_bor_block_number, args.prev_l2_block_number,
+            "prev bor block number mismatch with the one present in contract"
+        );
 
         // Fetch the bor header using the number read
         prev_bor_header = client

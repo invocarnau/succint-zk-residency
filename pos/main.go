@@ -19,13 +19,14 @@ import (
 )
 
 const (
-	proof                 = "proof"
-	l1ChainIDFlagName     = "l1-chainid"
-	l2ChainIDFlagName     = "l2-chainid"
-	milestoneIdFlagName   = "milestone-id"
-	milestoneHashFlagName = "milestone-hash"
-	gerL1FlagName         = "ger-l1"
-	gerL2FlagName         = "ger-l2"
+	proof                  = "proof"
+	l1ChainIDFlagName      = "l1-chainid"
+	l2ChainIDFlagName      = "l2-chainid"
+	milestoneIdFlagName    = "milestone-id"
+	milestoneHashFlagName  = "milestone-hash"
+	prevL2BlockNumFlagName = "prev-l2-block-num"
+	gerL1FlagName          = "ger-l1"
+	gerL2FlagName          = "ger-l2"
 )
 
 func main() {
@@ -53,14 +54,20 @@ func main() {
 				},
 				&cli.Uint64Flag{
 					Name:     milestoneIdFlagName,
-					Aliases:  []string{"id", "milestone-id"},
+					Aliases:  []string{"id"},
 					Usage:    "Milestone ID to generate consensus proof against",
 					Required: true,
 				},
 				&cli.StringFlag{
 					Name:     milestoneHashFlagName,
-					Aliases:  []string{"hash", "milestone-hash"},
+					Aliases:  []string{"hash"},
 					Usage:    "Milestone hash to generate consensus proof against",
+					Required: true,
+				},
+				&cli.IntFlag{
+					Name:     prevL2BlockNumFlagName,
+					Aliases:  []string{"from", "prev-block", "pb"},
+					Usage:    "Specify the previous L2 block number, from which the proof will start, this should match the new block of the last proof",
 					Required: true,
 				},
 				&cli.StringFlag{
@@ -90,14 +97,15 @@ func generateProof(c *cli.Context) error {
 	l2ChainID := c.Uint64(l2ChainIDFlagName)
 	milestoneId := c.Uint64(milestoneIdFlagName)
 	milestoneHash := c.String(milestoneHashFlagName)
+	prevL2Block := c.Int(prevL2BlockNumFlagName)
 	gerL1 := c.String(gerL1FlagName)
 	gerL2 := c.String(gerL2FlagName)
 
-	ethRpc, err := goutils.LoadEthRpc()
+	l1Rpc, l2Rpc, err := goutils.LoadRPCs(int(l1ChainID), int(l2ChainID))
 	if err != nil {
 		return err
 	}
-	l1BlockNumber, err := ethRpc.BlockNumber(context.Background())
+	l1BlockNumber, err := l1Rpc.BlockNumber(context.Background())
 	if err != nil {
 		return err
 	}
@@ -106,25 +114,33 @@ func generateProof(c *cli.Context) error {
 		return err
 	}
 
-	_, l2RPC, err := goutils.LoadRPCs(int(l1ChainID), int(l2ChainID))
-	if err != nil {
-		return err
-	}
-
 	// Generate both proofs in parallel
 	var wg sync.WaitGroup
+	var err1, err2 bool
 	go func() {
 		wg.Add(1)
 		err := GenerateConsensusProof(milestoneId, milestoneHash, l1BlockNumber)
-		fmt.Println("failed to generate consensus proofs:", err)
+		if err != nil {
+			fmt.Println("failed to generate consensus proofs:", err)
+			err1 = true
+		}
 		wg.Done()
 	}()
 	go func() {
 		wg.Add(1)
-		err := bridge.GenerateProof(context.Background(), l2RPC, "", l1ChainID, l2ChainID, l1BlockNumber, 0, l2Block, common.HexToAddress(gerL1), common.HexToAddress(gerL2))
-		fmt.Println("failed to generate bridge proofs:", err)
+		err := bridge.GenerateProof(context.Background(), l2Rpc, "", l1ChainID, l2ChainID, l1BlockNumber, uint64(prevL2Block), l2Block, common.HexToAddress(gerL1), common.HexToAddress(gerL2))
+		if err != nil {
+			fmt.Println("failed to generate bridge proofs:", err)
+			err2 = true
+		}
 		wg.Done()
 	}()
+	wg.Wait()
+	if err1 || err2 {
+		return fmt.Errorf("failed to generate proofs, consensus proof result: %v, bridge proof result: %v", err1, err2)
+	}
+
+	// TODO: Generate chain proof if everything goes well
 
 	return nil
 }

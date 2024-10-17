@@ -32,26 +32,6 @@ func LoadRPCs(l1ChainID, l2ChainID int) (l1RPC, l2RPC *ethclient.Client, err err
 	return
 }
 
-/////////
-/// Quite specific functions to PoS for now, will make it generic going forward
-/////////
-
-func LoadEthRpc() (ethRpc *ethclient.Client, err error) {
-	err = godotenv.Load("../.env")
-	if err != nil {
-		return nil, fmt.Errorf("error loading .env file: %w", err)
-	}
-	ethURL := os.Getenv("ETH_RPC_URL")
-	if ethURL == "" {
-		return nil, fmt.Errorf("invalid ETH_RPC_URL provided")
-	}
-	ethRpc, err = ethclient.Dial(ethURL)
-	if err != nil {
-		return nil, fmt.Errorf("failed to dial ETH_RPC_URL: %w", err)
-	}
-	return ethRpc, nil
-}
-
 func LoadHeimdallEndpoint() (endpoint string, err error) {
 	err = godotenv.Load("../.env")
 	if err != nil {

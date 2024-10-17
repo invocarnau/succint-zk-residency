@@ -136,8 +136,9 @@ pub async fn generate_inputs(args: Args) -> eyre::Result<PoSConsensusInput> {
     //     .await
     //     .expect("unable to fetch validator set");
 
-    let rpc_url =
-        std::env::var("ETH_RPC_URL").unwrap_or_else(|_| panic!("Missing ETH_RPC_URL in env"));
+    let chain_id = std::env::var("L1_CHAIN_ID").expect("L1_CHAIN_ID not set");
+    let eth_rpc = format!("RPC_{}", chain_id);
+    let rpc_url = std::env::var(eth_rpc).unwrap_or_else(|_| panic!("Missing eth rpc url in env"));
 
     // Calculate the best l1 block to choose from the last_updated field in validator set
     // let l1_block_number = find_best_l1_block(validator_set.result.validators, &rpc_url).await;

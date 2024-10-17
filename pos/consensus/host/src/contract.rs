@@ -1,4 +1,3 @@
-use eyre::Result;
 use ethers::{
     middleware::SignerMiddleware,
     providers::{Http, Middleware, Provider},
@@ -7,6 +6,7 @@ use ethers::{
         transaction::eip2718::TypedTransaction, Address, TransactionReceipt, TransactionRequest,
     },
 };
+use eyre::Result;
 use std::env;
 
 /// Wrapper of a `SignerMiddleware` client to send transactions to the given
@@ -23,7 +23,8 @@ impl Default for ContractClient {
             .expect("L1_CHAIN_ID not set")
             .parse::<u64>()
             .expect("L1_CHAIN_ID not a valid u64");
-        let rpc_url = env::var("ETH_RPC_URL").expect("ETH_RPC_URL not set");
+        let eth_rpc = format!("RPC_{}", chain_id);
+        let rpc_url = env::var(eth_rpc).expect("eth rpc url not set");
         let mut private_key = env::var("PRIVATE_KEY").expect("PRIVATE_KEY not set");
         // Strip the `0x` prefix from the private key (if present).
         if let Some(stripped) = private_key.strip_prefix("0x") {

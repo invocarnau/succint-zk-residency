@@ -3,9 +3,9 @@ use crate::types::{BlockResponse, MilestoneResponse, TxResponse, ValidatorSetRes
 use alloy_primitives::FixedBytes;
 use alloy_provider::ReqwestProvider;
 use alloy_rpc_types::BlockNumberOrTag;
-use eyre::Result;
 use ethers::providers::{Http, Middleware, Provider};
 use ethers::types::{BlockId, H256};
+use eyre::Result;
 use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
 use reqwest::Client;
 use reth_primitives::Header;
@@ -29,7 +29,10 @@ impl Default for PosClient {
             env::var("HEIMDALL_REST_ENDPOINT").expect("HEIMDALL_REST_ENDPOINT not set");
         let tendermint_url = env::var("TENDERMINT_ENDPOINT").expect("TENDERMINT_ENDPOINT not set");
         let http_client = Client::new();
-        let bor_rpc_url = env::var("BOR_RPC_URL").expect("BOR_RPC_URL not set");
+
+        let chain_id = std::env::var("L2_CHAIN_ID").expect("L2_CHAIN_ID not set");
+        let bor_rpc = format!("RPC_{}", chain_id);
+        let bor_rpc_url = env::var(bor_rpc).expect("bor rpc url not set");
 
         let mut headers = HeaderMap::new();
         headers.insert(

@@ -8,9 +8,9 @@ use polccint_lib::{
 };
 use sp1_sdk::{HashableKey, ProverClient, SP1Proof, SP1ProofWithPublicValues, SP1Stdin};
 
-pub const POS_CONSENSUS_PROOF_ELF: &[u8] = include_bytes!("../../../../../elf/pos-consensus-proof");
+pub const POS_CONSENSUS_PROOF_ELF: &[u8] = include_bytes!("../../../../../elf/pos-consensus");
 pub const POS_BRIDGE_PROOF_ELF: &[u8] = include_bytes!("../../../../../elf/bridge");
-pub const POS_CHAIN_PROOF_ELF: &[u8] = include_bytes!("../../../../../elf/pos-chain");
+pub const POS_CHAIN_PROOF_ELF: &[u8] = include_bytes!("../../../../../elf/chain-proof-pos");
 
 /// The arguments for the command.
 #[derive(Parser, Debug)]

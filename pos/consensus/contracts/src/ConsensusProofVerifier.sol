@@ -33,10 +33,12 @@ contract ConsensusProofVerifier {
     /// @notice The last verified bor block hash.
     bytes32 public lastVerifiedBorBlockHash;
 
-    constructor(address _verifier, bytes32 _consensusProofVKey, address _posStakeManager) {
+    constructor(address _verifier, bytes32 _consensusProofVKey, address _posStakeManager, bytes32 _lastVerifiedBorBlockHash) {
         verifier = _verifier;
         consensusProofVKey = _consensusProofVKey;
         posStakeManager = _posStakeManager;
+        // This is done to use a pre-defined hash instead of 0x00 for testing aggregation proofs
+        lastVerifiedBorBlockHash = _lastVerifiedBorBlockHash;
     }
 
     /// @notice Fetches the active validator info like signer address, respective stake, and 

@@ -17,7 +17,6 @@ sp1-cc-client-executor.workspace = true
 
 reth-primitives.workspace = true
 alloy-primitives.workspace = true
-alloy-rlp.workspace = true
 alloy-sol-types.workspace = true
 
 polccint-lib = { path = "../../../lib" }

@@ -3,6 +3,10 @@ name = "pos-chain-proof-host"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "vkey"
+path = "src/bin/vkey.rs"
+
 [dependencies]
 polccint-lib = { path = "../../../lib" }
 

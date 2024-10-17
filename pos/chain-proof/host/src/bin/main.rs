@@ -40,11 +40,19 @@ async fn main() -> eyre::Result<()> {
     println!("Initializing SP1 ProverClient...");
     let client = ProverClient::new();
     let (_, consensus_vk) = client.setup(POS_CONSENSUS_PROOF_ELF);
-    let (_, bridge_vk) = client.setup(POS_CONSENSUS_PROOF_ELF);
-    let (chain_proof_pk, chain_proof_vk) = client.setup(POS_CONSENSUS_PROOF_ELF);
+    let (_, bridge_vk) = client.setup(POS_BRIDGE_PROOF_ELF);
+    let (chain_proof_pk, chain_proof_vk) = client.setup(POS_CHAIN_PROOF_ELF);
 
-    println!("consensus vk {:?}", consensus_vk.hash_u32());
-    println!("bridge vk {:?}", bridge_vk.hash_u32());
+    println!(
+        "consensus vk derived: {:?}, expected: {:?}",
+        consensus_vk.hash_u32(),
+        POS_CONSENSUS_VK
+    );
+    println!(
+        "bridge vk derived: {:?}, expected: {:?}",
+        bridge_vk.hash_u32(),
+        BRIDGE_VK
+    );
     assert!(consensus_vk.hash_u32() == POS_CONSENSUS_VK);
     assert!(bridge_vk.hash_u32() == BRIDGE_VK);
 
@@ -82,6 +90,11 @@ async fn main() -> eyre::Result<()> {
 
     assert!(bridge_commit.prev_l2_block_hash == consensus_commit.prev_bor_hash);
     assert!(bridge_commit.new_l2_block_hash == consensus_commit.new_bor_hash);
+
+    println!(
+        "l1 bridge: {:?}, l1 consensus: {:?}",
+        bridge_commit.l1_block_hash, consensus_commit.l1_block_hash
+    );
     assert!(bridge_commit.l1_block_hash == consensus_commit.l1_block_hash);
 
     let chain_proof_input = ChainProofPoSInput {

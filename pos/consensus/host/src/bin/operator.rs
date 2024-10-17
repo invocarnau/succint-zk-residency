@@ -80,7 +80,8 @@ async fn main() -> eyre::Result<()> {
         println!("Proof verified!");
 
         // Handle the result of the save operation
-        let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../proof/consensus");
+        let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join(format!("../../proof/chain{}", l2_chain_id));
         std::fs::create_dir_all(&fixture_path).expect("failed to create fixture path");
 
         match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!(

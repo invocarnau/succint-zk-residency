@@ -35,6 +35,9 @@ pub struct Args {
     #[clap(long)]
     milestone_hash: String,
 
+    #[clap(long)]
+    l1_block_number: u64,
+
     #[arg(long, default_value_t = false)]
     prove: bool,
 }
@@ -128,16 +131,17 @@ pub async fn generate_inputs(args: Args) -> eyre::Result<PoSConsensusInput> {
         .unwrap();
 
     // Fetch the validator set
-    let validator_set = client
-        .fetch_validator_set_by_height(number + 2)
-        .await
-        .expect("unable to fetch validator set");
+    // let validator_set = client
+    //     .fetch_validator_set_by_height(number + 2)
+    //     .await
+    //     .expect("unable to fetch validator set");
 
     let rpc_url =
         std::env::var("ETH_RPC_URL").unwrap_or_else(|_| panic!("Missing ETH_RPC_URL in env"));
 
     // Calculate the best l1 block to choose from the last_updated field in validator set
-    let l1_block_number = find_best_l1_block(validator_set.result.validators, &rpc_url).await;
+    // let l1_block_number = find_best_l1_block(validator_set.result.validators, &rpc_url).await;
+    let l1_block_number = args.l1_block_number;
 
     // The L1 block number against which the transaction is executed
     let block_number = BlockNumberOrTag::Number(l1_block_number);

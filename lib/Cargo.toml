@@ -12,4 +12,3 @@ serde.workspace = true
 tiny-keccak.workspace = true
 reth-primitives.workspace = true
 alloy-sol-types.workspace = true
-reth-primitives.workspace = true

@@ -1,0 +1,38 @@
+networks:
+  default:
+    name: demo-succint
+    
+services:
+  demo-succint-cdk-op:
+    container_name: demo-succint-cdk-op
+    restart: no
+    image: arnaubennassar/cdk:12b8e2c
+    platform: linux/amd64
+    volumes:
+      - /tmp/op:/tmp
+      - ./config/cdk-op.toml:/app/config.toml
+      - ./config/aggoracle.keystore:/app/keystore/aggoracle.keystore
+      - ./config/claimsponsor.keystore:/app/keystore/claimsponsor.keystore
+    ports:
+      - 5577:5576
+    command:
+      - "/bin/sh"
+      - "-c"
+      - "cdk-node run --cfg /app/config.toml --custom-network-file /app/genesis.json --components aggoracle,rpc"
+
+  demo-succint-cdk-pos:
+    container_name: demo-succint-cdk-pos
+    restart: no
+    image: arnaubennassar/cdk:12b8e2c
+    platform: linux/amd64
+    volumes:
+      - /tmp/pos:/tmp
+      - ./config/cdk-pos.toml:/app/config.toml
+      - ./config/aggoracle.keystore:/app/keystore/aggoracle.keystore
+      - ./config/claimsponsor.keystore:/app/keystore/claimsponsor.keystore
+    ports:
+      - 5576:5576
+    command:
+      - "/bin/sh"
+      - "-c"
+      - "cdk-node run --cfg /app/config.toml --custom-network-file /app/genesis.json --components aggoracle,rpc"

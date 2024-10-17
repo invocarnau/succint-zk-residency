@@ -20,3 +20,7 @@ pgo-data.profdata
 .env
 
 **/l2data/**
+demo/config/cdk-op.toml
+demo/config/cdk-pos.toml
+demo/config/cdk-fep.toml
+**.keystore

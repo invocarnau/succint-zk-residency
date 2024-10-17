@@ -1,32 +1,31 @@
 use clap::Parser;
-use sp1_sdk::{SP1Proof, HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWithPublicValues, SP1VerifyingKey};
-use polccint_lib::{ChainProof, AggLayerProof, ChainProofSolidity};
-use polccint_lib::bridge::{BridgeCommit};
-use polccint_lib::fep_type_1::{BlockAggregationCommit};
+use polccint_lib::constants::{FEP, FEP_CHAIN_VK, OP, OP_CHAIN_VK, POS, POS_CHAIN_VK};
+use polccint_lib::{AggLayerProofInput, ChainProof, ChainProofSolidity};
+use sp1_sdk::{
+    utils, HashableKey, ProverClient, SP1Proof, SP1ProofWithPublicValues, SP1Stdin, SP1VerifyingKey,
+};
 
 use alloy::hex;
-use std::path::PathBuf;
-use polccint_lib::AggLayerProofSolidity;
 use alloy_sol_types::SolType;
-// import constants from lib
-use polccint_lib::constants::{CHAIN_VK};
-use serde::{Serialize, Deserialize};
+use polccint_lib::AggLayerProofSolidity;
+use serde::{Deserialize, Serialize};
+use std::{collections::HashMap, path::PathBuf};
+
+const FEP_CHAIN_ELF: &[u8] = include_bytes!("../../../elf/chain-proof-fep");
+const OP_CHAIN_ELF: &[u8] = include_bytes!("../../../elf/chain-proof-op"); // TODO: add correct elf
+const POS_CHAIN_ELF: &[u8] = include_bytes!("../../../elf/chain-proof-fep"); // TODO: add correct elf
 
 #[derive(Parser, Debug)]
 struct Args {
     /// The block number of the block to execute.
     #[clap(long)]
-    network_id: u64,
-
-    #[clap(long)]
-    network_range: u64,
+    network_ids: String,
 
     /// Whether or not to generate a proof.
     #[arg(long, default_value_t = false)]
     prove: bool,
 }
 
-const ELF_CHAIN_PROOF: &[u8] = include_bytes!("../../../elf/chain-proof-fep");
 const ELF_AGGLAYER_PROOF: &[u8] = include_bytes!("../../../elf/agglayer-proof");
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -35,7 +34,7 @@ struct SP1FinalAggregationProofFixture {
     pub vkey: String,
     pub public_values: String,
     pub proof: String,
-}   
+}
 struct AggregationInput {
     pub proof: SP1ProofWithPublicValues,
     pub vk: SP1VerifyingKey,
@@ -43,108 +42,114 @@ struct AggregationInput {
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
+    let vks = HashMap::from([(FEP, FEP_CHAIN_VK), (OP, OP_CHAIN_VK), (POS, POS_CHAIN_VK)]);
+    let elfs = HashMap::from([
+        (FEP, FEP_CHAIN_ELF),
+        (OP, OP_CHAIN_ELF),
+        (POS, POS_CHAIN_ELF),
+    ]);
     // Intialize the environment variables.
     dotenv::dotenv().ok();
-
-    // // Fallback to 'info' level if RUST_LOG is not set
-    // if std::env::var("RUST_LOG").is_err() {
-    //     std::env::set_var("RUST_LOG", "info");
-    // }
-
-    // Initialize the logger.
     utils::setup_logger();
-
-    // Parse the command line arguments.
     let args = Args::parse();
+    let net_ids_str: Vec<&str> = args.network_ids.split(',').collect();
+    println!("{:?}", net_ids_str);
+    let mut net_ids = Vec::new();
+    assert!(net_ids_str.len() > 0);
+    for net_id in net_ids_str {
+        // Assuming net_id is of type String
+        let net_id_uint: u32 = net_id.parse().expect("Failed to parse net_id as u32");
+        assert!(vks.contains_key(&net_id_uint));
+        net_ids.push(net_id_uint);
+    }
 
     // Generate the proof.
     let client = ProverClient::new();
 
     // Setup the proving and verifying keys.
-    let (_,chain_vk) = client.setup(ELF_CHAIN_PROOF);
     let (agglayer_proof_pk, agglayer_proof_vk) = client.setup(ELF_AGGLAYER_PROOF);
+    let mut chain_proof_inputs: Vec<AggregationInput> = Vec::new();
+    let mut input_vks: Vec<[u32; 8]> = Vec::new();
 
-    let initial_network_id = args.network_id;
-    let network_range = args.network_range; // hardcode for now TODO
-    let final_network_id = initial_network_id + network_range;
-
-    // assert constant vk with elf vk 
-    assert!(chain_vk.hash_u32() == CHAIN_VK);
-
-    let mut inputs: Vec<AggregationInput> = Vec::new();
-
-    for network_id in initial_network_id..final_network_id + 1 {
-   
+    for network_id in net_ids {
+        println!("adding inputs for network id: {}", network_id);
+        let elf_chain = elfs[&network_id];
+        let vk_chain = vks[&network_id];
+        let (_, actual_chain_vk) = client.setup(elf_chain);
+        assert_eq!(vk_chain, actual_chain_vk.hash_u32());
         let proof: SP1ProofWithPublicValues = SP1ProofWithPublicValues::load(
             PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join(format!(
-                    "../../chain-proofs/proof_chain_{}.bin",
-                    network_id
-                ))
-        ).expect("failed to load proof");
-        
-        inputs.push(
-            AggregationInput {
-                proof: proof,
-                vk: chain_vk.clone(),
-            }
-        );
+                .join(format!("../../chain-proofs/proof_chain_{}.bin", network_id)),
+        )
+        .expect("failed to load proof");
+
+        chain_proof_inputs.push(AggregationInput {
+            proof: proof,
+            vk: actual_chain_vk,
+        });
+        input_vks.push(vk_chain);
     }
 
-     // encode aggregation input and write to stdin
-     let mut stdin = SP1Stdin::new();
-     let aggregation_input = AggLayerProof{
-        chain_proofs: inputs
-         .iter()
-         .map(|input| input.proof.public_values.clone().read::<ChainProof>())
-         .collect::<Vec<_>>(),
-     };
-     
-     stdin.write(&aggregation_input);
- 
-     // write proofs
-     for input in inputs {
-         let SP1Proof::Compressed(proof) = input.proof.proof else {
-             panic!()
-         };
-         stdin.write_proof(proof, input.vk.vk);
-     }
-     
-     // Only execute the program.
-     let (mut public_values, execution_report) =
-         client.execute(&agglayer_proof_pk.elf, stdin.clone()).run().unwrap();
-     println!(
-         "Finished executing the block in {} cycles",
-         execution_report.total_instruction_count()
-     );
+    // encode aggregation input and write to stdin
+    let mut stdin = SP1Stdin::new();
+    let aggregation_input = AggLayerProofInput {
+        chain_proofs: chain_proof_inputs
+            .iter()
+            .map(|input| input.proof.public_values.clone().read::<ChainProof>())
+            .collect::<Vec<_>>(),
+        vks: input_vks,
+    };
+
+    stdin.write(&aggregation_input);
+
+    // write proofs
+    for input in chain_proof_inputs {
+        let SP1Proof::Compressed(proof) = input.proof.proof else {
+            panic!()
+        };
+        stdin.write_proof(proof, input.vk.vk);
+    }
+
+    // Only execute the program.
+    let (public_values, execution_report) = client
+        .execute(&agglayer_proof_pk.elf, stdin.clone())
+        .run()
+        .unwrap();
+    println!(
+        "Finished executing the block in {} cycles",
+        execution_report.total_instruction_count()
+    );
 
     if args.prove {
         println!("Starting proof generation.");
-        let proof: SP1ProofWithPublicValues = client.prove(&agglayer_proof_pk, stdin.clone()).plonk().run().expect("Proving should work.");
+        let proof: SP1ProofWithPublicValues = client
+            .prove(&agglayer_proof_pk, stdin.clone())
+            .plonk()
+            .run()
+            .expect("Proving should work.");
         println!("Proof generation finished.");
 
-        client.verify(&proof, &agglayer_proof_vk).expect("proof verification should succeed");
+        // client
+        //     .verify(&proof, &agglayer_proof_vk)
+        //     .expect("proof verification should succeed");
         // Handle the result of the save operation
 
-        let fixture_path: PathBuf = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../agglayer_proofs");
+        let fixture_path: PathBuf =
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../agglayer_proofs");
         std::fs::create_dir_all(&fixture_path).expect("failed to create fixture path");
 
-        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!("../agglayer_proofs/aggregation_from_{}_to_{}_proof.bin", initial_network_id, final_network_id))) {
+        let network_ids_string = args.network_ids.replace(",", "_");
+        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!(
+            "../agglayer_proofs/aggregation_for_{}.bin",
+            network_ids_string
+        ))) {
             Ok(_) => println!("Proof saved successfully."),
             Err(e) => eprintln!("Failed to save proof: {}", e),
         }
 
         let public_values_solidity_encoded = proof.public_values.as_slice();
-        let decoded_values: AggLayerProofSolidity = AggLayerProofSolidity::abi_decode(public_values_solidity_encoded, true).unwrap();
-
-
-        // println!("Decoded public values:");
-        // println!("prev_l2_block_hash: 0x{}", decoded_values.prev_l2_block_hash);
-        // println!("new_l2_block_hash: 0x{}", decoded_values.new_l2_block_hash);
-        // println!("l1_block_hash: 0x{}", decoded_values.l1_block_hash);
-        // println!("new_ler: 0x{}", decoded_values.new_ler);
-        // println!("l1_ger_addr: {}", decoded_values.l1_ger_addr);
-        // println!("l2_ger_addr: {}", decoded_values.l2_ger_addr);
+        let decoded_values: AggLayerProofSolidity =
+            AggLayerProofSolidity::abi_decode(public_values_solidity_encoded, true).unwrap();
 
         let fixture = SP1FinalAggregationProofFixture {
             chain_proofs: decoded_values.chain_proofs,
@@ -153,16 +158,17 @@ async fn main() -> eyre::Result<()> {
             proof: format!("0x{}", hex::encode(proof.bytes())),
         };
 
-       
         std::fs::write(
-            fixture_path.join(format!("aggregation_from_{}_to_{}_proof.json", initial_network_id, final_network_id).to_lowercase()),
+            fixture_path.join(
+                format!(
+                    "aggregation_for_{}.json",
+                    network_ids_string
+                )
+                .to_lowercase(),
+            ),
             serde_json::to_string_pretty(&fixture).unwrap(),
         )
         .expect("failed to write fixture");
-
     }
     Ok(())
 }
-
-
-

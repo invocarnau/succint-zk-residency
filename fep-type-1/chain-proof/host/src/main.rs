@@ -2,16 +2,11 @@ use clap::Parser;
 use sp1_sdk::{SP1Proof, HashableKey, utils, ProverClient, SP1Stdin, SP1ProofWithPublicValues};
 mod cli;
 use cli::ProviderArgs;
-use polccint_lib::{ChainProof};
-use polccint_lib::bridge::{BridgeCommit};
-use polccint_lib::fep_type_1::{BlockAggregationCommit};
-
-use alloy::hex;
+use polccint_lib::ChainProof;
+use polccint_lib::bridge::BridgeCommit;
+use polccint_lib::fep_type_1::BlockAggregationCommit;
 use std::path::PathBuf;
-use polccint_lib::ChainProofSolidity;
-use alloy_sol_types::SolType;
-// import constants from lib
-use polccint_lib::constants::{BRIDGE_VK, AGGREGATION_VK};
+use polccint_lib::constants::{BRIDGE_VK, FEP_BLOCK_AGGREGATION_VK};
 use serde::{Serialize, Deserialize};
 
 #[derive(Parser, Debug)]
@@ -82,7 +77,7 @@ async fn main() -> eyre::Result<()> {
 
     // assert constant vk with elf vk 
     assert!(bridge_vk.hash_u32() == BRIDGE_VK);
-    assert!(aggregation_vk.hash_u32() == AGGREGATION_VK);
+    assert!(aggregation_vk.hash_u32() == FEP_BLOCK_AGGREGATION_VK);
 
     let proof_aggregation: SP1ProofWithPublicValues = SP1ProofWithPublicValues::load(
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))

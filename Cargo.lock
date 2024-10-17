@@ -75,6 +75,7 @@ dependencies = [
  "clap",
  "dotenv",
  "eyre",
+ "phf",
  "polccint-lib",
  "reth-primitives",
  "rsp-client-executor 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
@@ -4474,6 +4475,49 @@ dependencies = [
 ]
 
 [[package]]
+name = "phf"
+version = "0.10.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fabbf1ead8a5bcbc20f5f8b939ee3f5b0f6f281b6ad3468b84656b658b455259"
+dependencies = [
+ "phf_macros",
+ "phf_shared",
+]
+
+[[package]]
+name = "phf_generator"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d5285893bb5eb82e6aaf5d59ee909a06a16737a8970984dd7746ba9283498d6"
+dependencies = [
+ "phf_shared",
+ "rand",
+]
+
+[[package]]
+name = "phf_macros"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58fdf3184dd560f160dd73922bea2d5cd6e8f064bf4b13110abd81b03697b4e0"
+dependencies = [
+ "phf_generator",
+ "phf_shared",
+ "proc-macro-hack",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "phf_shared"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b6796ad771acdc0123d2a88dc428b5e38ef24456743ddb1744ed628f9815c096"
+dependencies = [
+ "siphasher",
+]
+
+[[package]]
 name = "pin-project"
 version = "1.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4662,6 +4706,12 @@ dependencies = [
  "quote",
  "syn 2.0.79",
 ]
+
+[[package]]
+name = "proc-macro-hack"
+version = "0.5.20+deprecated"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc375e1527247fe1a97d8b7156678dfe7c1af2fc075c9a4db3690ecd2a148068"
 
 [[package]]
 name = "proc-macro2"
@@ -6410,6 +6460,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "siphasher"
+version = "0.3.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "38b58827f4464d87d377d175e90bf58eb00fd8716ff0a62f80356b5e61555d0d"
+
+[[package]]
 name = "size"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6696,15 +6752,11 @@ dependencies = [
 
 [[package]]
 name = "sp1-lib"
-version = "2.0.0"
-source = "git+https://github.com/succinctlabs/sp1.git?branch=dev#10ebf6cc5e67e562d2dbbdaef8a7b96966b21ac3"
+version = "3.0.0-rc4"
+source = "git+https://github.com/succinctlabs/sp1.git?branch=dev#ca71f2d22151f98dbb9ab2d3836cb4016fee891e"
 dependencies = [
- "anyhow",
  "bincode",
- "cfg-if",
- "hex",
  "serde",
- "snowbridge-amcl",
 ]
 
 [[package]]
@@ -7062,7 +7114,7 @@ dependencies = [
  "rand",
  "serde",
  "sha2",
- "sp1-lib 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sp1-lib 2.0.0",
  "sp1-primitives",
 ]
 
@@ -7165,7 +7217,7 @@ dependencies = [
  "lazy_static",
  "rand",
  "rustc-hex",
- "sp1-lib 2.0.0 (git+https://github.com/succinctlabs/sp1.git?branch=dev)",
+ "sp1-lib 3.0.0-rc4",
 ]
 
 [[package]]

@@ -21,7 +21,13 @@ pub struct ChainProof {
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AggLayerProof {
+pub struct AggLayerProofInput {
+    pub chain_proofs: Vec<ChainProof>,
+    pub vks: Vec<[u32; 8]>
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AggLayerProofCommit {
     pub chain_proofs: Vec<ChainProof>, 
 }
 

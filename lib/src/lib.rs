@@ -7,6 +7,8 @@ pub mod bridge;
 pub mod fep_type_1;
 
 
+pub mod op;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChainProof {
     pub prev_l2_block_hash: B256,

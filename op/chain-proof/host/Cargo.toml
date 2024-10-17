@@ -1,0 +1,51 @@
+# RSP uses a different version of rust than the rest of SP1,
+# so we need to use a different toolchain, which we achieve by
+# declaring an empty workspace.
+[package]
+version = "0.1.0"
+name = "op-chain-proof-host"
+edition = "2021"
+
+[dependencies]
+# workspace
+polccint-lib = { path = "../../../lib" }
+serde_json.workspace = true
+serde.workspace = true
+bincode.workspace = true
+clap.workspace = true
+dotenv.workspace = true
+
+eyre.workspace = true
+tokio.workspace = true
+url.workspace = true
+
+
+# rsp
+rsp-host-executor.workspace = true
+rsp-client-executor.workspace = true
+
+reth-primitives.workspace = true
+
+# sp1
+sp1-sdk.workspace = true
+
+
+# alloy
+alloy-provider.workspace = true
+alloy-sol-types.workspace = true
+alloy-sol-macro.workspace = true
+alloy.workspace = true
+alloy-primitives.workspace = true
+alloy-rpc-types.workspace = true
+
+# sp1 cc
+sp1-cc-host-executor.workspace = true
+sp1-cc-client-executor.workspace = true
+
+[build-dependencies]
+sp1-build = "2.0.0"
+
+
+[features]
+default = []
+cuda = ["sp1-sdk/cuda"]

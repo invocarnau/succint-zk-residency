@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use polccint_lib::ChainProofSolidity;
 use alloy_sol_types::SolType;
 // import constants from lib
-use polccint_lib::constants::{BRIDGE_VK, AGGREGATION_VK};
+use polccint_lib::constants::{BRIDGE_VK, FEP_BLOCK_AGGREGATION_VK};
 use serde::{Serialize, Deserialize};
 
 #[derive(Parser, Debug)]
@@ -31,7 +31,7 @@ struct Args {
 
 const ELF_BLOCK_AGGREGATION: &[u8] = include_bytes!("../../../../elf/block-aggregation");
 const ELF_BRIDGE: &[u8] = include_bytes!("../../../../elf/bridge");
-const ELF_FINAL_AGGREGATION: &[u8] = include_bytes!("../../../../elf/aggregation-final");
+const ELF_FINAL_AGGREGATION: &[u8] = include_bytes!("../../../../elf/aggregation-fep-solidity");
 
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -80,7 +80,7 @@ async fn main() -> eyre::Result<()> {
 
     // assert constant vk with elf vk 
     assert!(bridge_vk.hash_u32() == BRIDGE_VK);
-    assert!(aggregation_vk.hash_u32() == AGGREGATION_VK);
+    assert!(aggregation_vk.hash_u32() == FEP_BLOCK_AGGREGATION_VK);
 
     let proof_aggregation: SP1ProofWithPublicValues = SP1ProofWithPublicValues::load(
         PathBuf::from(env!("CARGO_MANIFEST_DIR"))

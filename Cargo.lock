@@ -3953,6 +3953,88 @@ dependencies = [
 ]
 
 [[package]]
+name = "op-chain-proof-client"
+version = "1.1.0"
+dependencies = [
+ "alloy-primitives 0.8.5",
+ "bincode",
+ "polccint-lib",
+ "sha2",
+ "sp1-zkvm",
+]
+
+[[package]]
+name = "op-chain-proof-host"
+version = "0.1.0"
+dependencies = [
+ "alloy",
+ "alloy-primitives 0.8.5",
+ "alloy-provider",
+ "alloy-rpc-types",
+ "alloy-sol-macro 0.8.5",
+ "alloy-sol-types 0.8.5",
+ "bincode",
+ "clap",
+ "dotenv",
+ "eyre",
+ "polccint-lib",
+ "reth-primitives",
+ "rsp-client-executor 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
+ "rsp-host-executor",
+ "serde",
+ "serde_json",
+ "sp1-build",
+ "sp1-cc-client-executor",
+ "sp1-cc-host-executor",
+ "sp1-sdk",
+ "tokio",
+ "url",
+]
+
+[[package]]
+name = "op-consensus-host"
+version = "0.1.0"
+dependencies = [
+ "alloy",
+ "alloy-primitives 0.8.5",
+ "alloy-provider",
+ "alloy-rpc-types",
+ "alloy-sol-macro 0.8.5",
+ "alloy-sol-types 0.8.5",
+ "bincode",
+ "clap",
+ "dotenv",
+ "eyre",
+ "polccint-lib",
+ "reth-primitives",
+ "revm",
+ "rsp-client-executor 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
+ "rsp-host-executor",
+ "serde",
+ "serde_json",
+ "sp1-build",
+ "sp1-cc-client-executor",
+ "sp1-cc-host-executor",
+ "sp1-sdk",
+ "tokio",
+ "url",
+]
+
+[[package]]
+name = "op-consensus-program"
+version = "1.1.0"
+dependencies = [
+ "alloy-primitives 0.8.5",
+ "alloy-sol-macro 0.8.5",
+ "alloy-sol-types 0.8.5",
+ "bincode",
+ "polccint-lib",
+ "revm",
+ "sp1-cc-client-executor",
+ "sp1-zkvm",
+]
+
+[[package]]
 name = "open-fastrlp"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4571,9 +4653,11 @@ version = "1.1.0"
 dependencies = [
  "alloy-primitives 0.8.5",
  "alloy-sol-types 0.8.5",
+ "reth-primitives",
  "rsp-client-executor 0.1.0 (git+https://github.com/invocamanman/rsp?branch=feature/addDinamycChainIDClique)",
  "serde",
  "sp1-cc-client-executor",
+ "tiny-keccak",
 ]
 
 [[package]]

@@ -11,7 +11,7 @@ use sha2::{Digest,Sha256};
 use bincode;
 use polccint_lib::ChainProofSolidity;
 use alloy_sol_types::SolType;
-use polccint_lib::constants::{BRIDGE_VK, AGGREGATION_VK};
+use polccint_lib::constants::{BRIDGE_VK, FEP_BLOCK_AGGREGATION_VK};
 
 pub fn main() {
     // Read the input.
@@ -31,7 +31,7 @@ pub fn main() {
     let serialized_public_values_aggregation = bincode::serialize(&block_aggregation_commit).unwrap();
     let public_values_digest_aggregation = Sha256::digest(serialized_public_values_aggregation);
     sp1_zkvm::lib::verify::verify_sp1_proof(
-        &AGGREGATION_VK, 
+        &FEP_BLOCK_AGGREGATION_VK, 
         &public_values_digest_aggregation.into()
     );
 

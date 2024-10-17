@@ -6,7 +6,7 @@ sp1_zkvm::entrypoint!(main);
 use alloy_primitives::B256;
 use polccint_lib::bridge::BridgeCommit;
 use polccint_lib::constants::{BRIDGE_VK, POS_CONSENSUS_VK};
-use polccint_lib::pos_consensus::{ChainProofPoSInput, PoSConsensusCommit};
+use polccint_lib::pos::{ChainProofPoSInput, PoSConsensusCommit};
 use polccint_lib::ChainProof;
 use sha2::{Digest, Sha256};
 

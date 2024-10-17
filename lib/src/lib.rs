@@ -5,9 +5,8 @@ use serde::{Deserialize, Serialize};
 pub mod bridge;
 pub mod constants;
 pub mod fep_type_1;
-pub mod pos_consensus;
-
 pub mod op;
+pub mod pos;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ChainProof {

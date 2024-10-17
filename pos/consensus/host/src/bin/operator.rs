@@ -18,7 +18,7 @@ use sp1_cc_client_executor::ContractInput;
 use sp1_cc_host_executor::HostExecutor;
 
 use polccint_lib::constants::CALLER;
-use polccint_lib::pos_consensus::{ConsensusProofVerifier, PoSConsensusInput};
+use polccint_lib::pos::{ConsensusProofVerifier, PoSConsensusInput};
 
 use pos_consensus_proof_client::{types, types::heimdall_types};
 use pos_consensus_proof_host::types::{Precommit, Validator};
@@ -54,7 +54,10 @@ async fn main() -> eyre::Result<()> {
 
     let args = Args::parse();
     let prove = args.prove;
-    let id = args.milestone_id;
+    let prev_l2_block_number = args.prev_l2_block_number;
+    let new_l2_block_number = args.new_l2_block_number;
+
+    let l2_chain_id = std::env::var("L2_CHAIN_ID").expect("L2_CHAIN_ID not set");
 
     // Setup the logger.
     sp1_sdk::utils::setup_logger();
@@ -77,13 +80,13 @@ async fn main() -> eyre::Result<()> {
         println!("Proof verified!");
 
         // Handle the result of the save operation
-        let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../proofs/consensus");
+        let fixture_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../proof/consensus");
         std::fs::create_dir_all(&fixture_path).expect("failed to create fixture path");
 
-        match proof.save(
-            PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-                .join(format!("../../proofs/consensus/milestone_{}.bin", id)),
-        ) {
+        match proof.save(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(format!(
+            "../../proof/chain{}/consensus_block_{}_to_{}.bin",
+            l2_chain_id, prev_l2_block_number, new_l2_block_number
+        ))) {
             Ok(_) => println!("Proof saved successfully."),
             Err(e) => eprintln!("Failed to save proof: {}", e),
         }

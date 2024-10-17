@@ -6,7 +6,7 @@ use bincode;
 use alloy_primitives::{keccak256, Uint};
 use alloy_sol_types::SolCall;
 use polccint_lib::constants::CALLER;
-use polccint_lib::pos_consensus::{ConsensusProofVerifier, PoSConsensusCommit, PoSConsensusInput};
+use polccint_lib::pos::{ConsensusProofVerifier, PoSConsensusCommit, PoSConsensusInput};
 use sp1_cc_client_executor::{io::EVMStateSketch, ClientExecutor, ContractInput};
 
 pub fn prove(input: PoSConsensusInput) -> PoSConsensusCommit {

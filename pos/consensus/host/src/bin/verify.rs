@@ -6,7 +6,7 @@
 //! ```
 
 use alloy_sol_types::{SolCall, SolType};
-use polccint_lib::pos_consensus::{ConsensusProofVerifier, PublicValuesStruct};
+use polccint_lib::pos::{ConsensusProofVerifier, PublicValuesStruct};
 use pos_consensus_proof_host::{contract::ContractClient, ConsensusProver};
 use sp1_sdk::SP1ProofWithPublicValues;
 

@@ -1,4 +1,4 @@
-use polccint_lib::pos_consensus::PoSConsensusInput;
+use polccint_lib::pos::PoSConsensusInput;
 use sp1_sdk::{ProverClient, SP1ProofWithPublicValues, SP1ProvingKey, SP1Stdin, SP1VerifyingKey};
 
 pub mod contract;

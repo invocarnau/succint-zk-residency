@@ -5,7 +5,7 @@
 #![no_main]
 sp1_zkvm::entrypoint!(main);
 
-use polccint_lib::pos_consensus::PoSConsensusInput;
+use polccint_lib::pos::PoSConsensusInput;
 use pos_consensus_proof_client::milestone::prove;
 
 fn main() {

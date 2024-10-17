@@ -165,7 +165,7 @@ func findL2Block(id uint64) (uint64, error) {
 		return 0, err
 	}
 
-	url := fmt.Sprint("%s/milestone/%d", heimdallEndpoint, id)
+	url := fmt.Sprintf("%s/milestone/%d", heimdallEndpoint, id)
 	resp, err := http.Get(url)
 	if err != nil {
 		return 0, err

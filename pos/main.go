@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"sync"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -56,25 +57,25 @@ func main() {
 					Name:     milestoneIdFlagName,
 					Aliases:  []string{"id"},
 					Usage:    "Milestone ID to generate consensus proof against",
-					Required: true,
+					Required: false,
 				},
 				&cli.StringFlag{
 					Name:     milestoneHashFlagName,
 					Aliases:  []string{"hash"},
 					Usage:    "Milestone hash to generate consensus proof against",
-					Required: true,
+					Required: false,
 				},
-				&cli.IntFlag{
+				&cli.Uint64Flag{
 					Name:     prevL2BlockNumFlagName,
 					Aliases:  []string{"from", "prev-block", "pb"},
 					Usage:    "Specify the previous L2 block number, from which the proof will start, this should match the new block of the last proof",
-					Required: true,
+					Required: false,
 				},
 				&cli.StringFlag{
 					Name:     gerL1FlagName,
 					Aliases:  []string{"gl1", "ger-addr-l1"},
 					Usage:    "Address of the L1 GER contract",
-					Required: true,
+					Required: false,
 				},
 				&cli.StringFlag{
 					Name:     gerL2FlagName,
@@ -92,12 +93,36 @@ func main() {
 	}
 }
 
+func getGers(c *cli.Context) error {
+	l1ChainID := c.Uint64(l1ChainIDFlagName)
+	l2ChainID := c.Uint64(l2ChainIDFlagName)
+	gerL2 := c.String(gerL2FlagName)
+	_, l2Rpc, err := goutils.LoadRPCs(int(l1ChainID), int(l2ChainID))
+	if err != nil {
+		return err
+	}
+	gers, err := bridge.SyncGERInjections(context.Background(), l2Rpc, common.HexToAddress(gerL2), 13296845, 13297750)
+	if err != nil {
+		return err
+	}
+	fmt.Println("gers:", gers)
+	gersStr := ""
+	for _, ger := range gers {
+		gersStr += ger.Hex() + ","
+	}
+	if len(gersStr) > 0 {
+		gersStr = strings.TrimSuffix(gersStr, ",")
+	}
+	fmt.Println("gersStr:", gersStr)
+	return nil
+}
+
 func generateProof(c *cli.Context) error {
 	l1ChainID := c.Uint64(l1ChainIDFlagName)
 	l2ChainID := c.Uint64(l2ChainIDFlagName)
 	milestoneId := c.Uint64(milestoneIdFlagName)
 	milestoneHash := c.String(milestoneHashFlagName)
-	prevL2Block := c.Int(prevL2BlockNumFlagName)
+	prevL2Block := c.Uint64(prevL2BlockNumFlagName)
 	gerL1 := c.String(gerL1FlagName)
 	gerL2 := c.String(gerL2FlagName)
 
@@ -119,7 +144,7 @@ func generateProof(c *cli.Context) error {
 	var err1, err2 bool
 	go func() {
 		wg.Add(1)
-		err := GenerateConsensusProof(milestoneId, milestoneHash, l1BlockNumber)
+		err := generateConsensusProof(l1ChainID, milestoneId, milestoneHash, l1BlockNumber, prevL2Block, l2Block)
 		if err != nil {
 			fmt.Println("failed to generate consensus proofs:", err)
 			err1 = true
@@ -128,7 +153,7 @@ func generateProof(c *cli.Context) error {
 	}()
 	go func() {
 		wg.Add(1)
-		err := bridge.GenerateProof(context.Background(), l2Rpc, "", l1ChainID, l2ChainID, l1BlockNumber, uint64(prevL2Block), l2Block, common.HexToAddress(gerL1), common.HexToAddress(gerL2))
+		err := bridge.GenerateProof(context.Background(), l2Rpc, "", l1ChainID, l2ChainID, l1BlockNumber, prevL2Block, l2Block, common.HexToAddress(gerL1), common.HexToAddress(gerL2))
 		if err != nil {
 			fmt.Println("failed to generate bridge proofs:", err)
 			err2 = true
@@ -140,29 +165,40 @@ func generateProof(c *cli.Context) error {
 		return fmt.Errorf("failed to generate proofs, consensus proof result: %v, bridge proof result: %v", err1, err2)
 	}
 
-	// TODO: Generate chain proof if everything goes well
+	// Generate aggregated chain proof
+	err = generateChainProof(l2ChainID, prevL2Block, l2Block)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
-func GenerateConsensusProof(milestoneId uint64, milestoneHash string, l1BlockNumber uint64) error {
-	expectedOutputFile := path.Join("proofs/consensus", fmt.Sprintf("milestone_%d", milestoneId))
+func generateConsensusProof(l2ChainId uint64, milestoneId uint64, milestoneHash string, l1BlockNumber uint64, prevL2BlockNumber uint64, newL2BlockNumber uint64) error {
+	expectedOutputFile := path.Join("proofs", fmt.Sprintf("chain%d/consensus_block_%d_to_%d", l2ChainId, prevL2BlockNumber, newL2BlockNumber))
 	if _, err := os.Stat(expectedOutputFile); err == nil {
 		fmt.Println("consensus proof already exists (file): ", expectedOutputFile)
 		return nil
 	}
 
-	// cargo run --bin operator --release -- --milestone-id 329745 --milestone-hash 0x708d99ad07a0cee3e696197e838073000c27fde2daa8a63290dff27c5e4932b4 --prove
+	// cargo run --bin operator --release -- --milestone-id 332570 \
+	// --milestone-hash 0xa25a2d394de5d8bede49a90c870fcdae72cdcf5e7dd26c117e17c3ffa9d35ec7 \
+	// --l1-block-number 6894731 \
+	// --prev-l2-block-number 13296845 --new-l2-block-number 13298032 \
+	// --prove
 	// Generate the consensus proof command for operator
 	proofCmd := fmt.Sprintf(
-		`cargo run --bin operator --release \
-		--milestone-id %d \
+		`cargo run --bin operator --release -- --milestone-id %d \
 		--milestone-hash %s \
-		--l1_block_number %d \
+		--l1-block-number %d \
+		--prev-l2-block-number %d \
+		--new-l2-block-number %d \
 		--prove`,
 		milestoneId,
 		milestoneHash,
 		l1BlockNumber,
+		prevL2BlockNumber,
+		newL2BlockNumber,
 	)
 	fmt.Println("running the consensus proof command:", proofCmd)
 	cmd := exec.Command("bash", "-l", "-c", proofCmd)
@@ -172,6 +208,24 @@ func GenerateConsensusProof(milestoneId uint64, milestoneHash string, l1BlockNum
 		return fmt.Errorf("failed to generate consensus proof:\n%s\n\n%w", string(msg), err)
 	}
 	fmt.Println("🚀🚀 🤝CONSENSUS PROOF GENERATED🤝 🚀🚀")
+	return nil
+}
+
+func generateChainProof(l2ChainId uint64, prevL2BlockNumber uint64, newL2BlockNumber uint64) error {
+	// cargo run --release --bin main -- --prev-l2-block-number 13296845 --new-l2-block-number 13298032 --prove
+	proofCmd := fmt.Sprintf(
+		`cargo run --bin main --release -- --prev-l2-block-number %d --new-l2-block-number %d --prove`,
+		prevL2BlockNumber,
+		newL2BlockNumber,
+	)
+	fmt.Println("running the chain proof command:", proofCmd)
+	cmd := exec.Command("bash", "-l", "-c", proofCmd)
+	cmd.Dir = "chain-proof/host"
+	msg, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to generate chain proof for pos:\n%s\n\n%w", string(msg), err)
+	}
+	fmt.Println("🚀🚀 🤝CHAIN PROOF FOR POS GENERATED🤝 🚀🚀")
 	return nil
 }
 

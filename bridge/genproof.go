@@ -18,7 +18,7 @@ import (
 
 var updateGEREvent = crypto.Keccak256Hash([]byte("InsertGlobalExitRoot(bytes32)"))
 
-func syncGERInjections(ctx context.Context, l2RPC *ethclient.Client, gerAddrL2 common.Address, fromBlock, toBlock uint64) ([]common.Hash, error) {
+func SyncGERInjections(ctx context.Context, l2RPC *ethclient.Client, gerAddrL2 common.Address, fromBlock, toBlock uint64) ([]common.Hash, error) {
 	sc, err := gerl2.NewGerl2(gerAddrL2, l2RPC)
 	if err != nil {
 		return nil, fmt.Errorf("gerl2.NewGerl2: %w", err)
@@ -65,7 +65,7 @@ func GenerateProof(
 		return nil
 	}
 	fmt.Printf("synchronizing injected GERs from block %d to %d\n", prevL2BlockNumber, newL2BlockNumber)
-	gers, err := syncGERInjections(ctx, l2RPC, gerAddrL2, prevL2BlockNumber, newL2BlockNumber)
+	gers, err := SyncGERInjections(ctx, l2RPC, gerAddrL2, prevL2BlockNumber, newL2BlockNumber)
 	if err != nil {
 		return fmt.Errorf("syncGERInjections: %w", err)
 	}

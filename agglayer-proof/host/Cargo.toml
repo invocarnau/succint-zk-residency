@@ -42,6 +42,8 @@ alloy-rpc-types.workspace = true
 sp1-cc-host-executor.workspace = true
 sp1-cc-client-executor.workspace = true
 
+phf = { version = "0.10", features = ["phf_macros"] }
+
 [build-dependencies]
 sp1-build = "2.0.0"
 

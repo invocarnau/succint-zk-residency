@@ -4,8 +4,7 @@
 sp1_zkvm::entrypoint!(main);
 
 use alloy_sol_types::SolType;
-use polccint_lib::constants::CHAIN_VK;
-use polccint_lib::{AggLayerProof, AggLayerProofSolidity, ChainProof, ChainProofSolidity};
+use polccint_lib::{AggLayerProofInput, AggLayerProofSolidity, ChainProofSolidity};
 
 use bincode;
 use sha2::{Digest, Sha256};
@@ -14,7 +13,7 @@ pub fn main() {
     // Read the input.
 
     // could pass just an array of blockhashes
-    let input: AggLayerProof = sp1_zkvm::io::read::<AggLayerProof>();
+    let input: AggLayerProofInput = sp1_zkvm::io::read::<AggLayerProofInput>();
 
     // Verify the aggregated block proof
 
@@ -23,10 +22,10 @@ pub fn main() {
     };
 
     // Recreate the block aggregation commit
-    for chain_proof in input.chain_proofs {
+    for (i, chain_proof) in input.chain_proofs.iter().enumerate() {
         let serialized_public_values_chain = bincode::serialize(&chain_proof).unwrap();
         let public_values_digest_chain = Sha256::digest(serialized_public_values_chain);
-        sp1_zkvm::lib::verify::verify_sp1_proof(&CHAIN_VK, &public_values_digest_chain.into());
+        sp1_zkvm::lib::verify::verify_sp1_proof(&input.vks[i], &public_values_digest_chain.into());
         public_values_solidity
             .chain_proofs
             .push(ChainProofSolidity {

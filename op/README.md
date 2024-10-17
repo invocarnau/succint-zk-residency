@@ -51,8 +51,8 @@ Make sure to replace the following:
 - A: Chain ID of the L1. If you want to use our testnet env, use `11155111` (Sepolia)
 - B: Chain ID of the L1. If you want to use our testnet env, use `11155420` (OP Sepolia)
 - C: Address of the game factory proxy contract, deployed on L1. If you want to use our testnet env, use `0x05f9613adb30026ffd634f38e5c4dfd30a197fa1`
-- D: Last L2 block number that has been verified. This is intentionally non inforced, so you can choose any value greater than the block number where the L2 contracts were deployed, for instance `18655973` (recommended to use a recent but not too recent block number such as current block num - 1000, as this will incure calls on the L2 rpc)
-- E: Addrees of the Global Exit Root contract on L1. If you want to use our testnet env, use `0xBa36ee0dBDC8fe4c2f82dD75506CF836E0205974`
+- D: Last L2 block number that has been verified. This is intentionally non inforced, so you can choose any value greater than the block number where the L2 contracts were deployed, for instance `18699590` (recommended to use a recent but not too recent block number such as current block num - 1000, as this will incure calls on the L2 rpc)
+- E: Addrees of the Global Exit Root contract on L1. If you want to use our testnet env, use `0xe8085E052669cA2CDeCe52123A3E77461AA31494s`
 - F: Addrees of the Global Exit Root contract on L2. If you want to use our testnet env, use `0x0518576bC94CF5C4078f5f7bAAea8f2DF5fe61FC`
 - G: Network ID of the rollup, as per the rollup manager. If you want to use our testnet env, use `TBD`
 

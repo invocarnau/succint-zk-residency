@@ -93,9 +93,9 @@ async fn main() -> eyre::Result<()> {
         let imported_gers_splitted: Vec<&str> = args.imported_gers_hex.split(',').collect();
         println!("{:?}", imported_gers_splitted);
         imported_gers = Vec::with_capacity(imported_gers_splitted.len());
-        for (i, ger_hex) in imported_gers_splitted.iter().enumerate() {
-            imported_gers[i] =
-                alloy_primitives::FixedBytes::from_slice(&hex::decode(&ger_hex).unwrap());
+        for ger_hex in imported_gers_splitted {
+            imported_gers.push(
+                alloy_primitives::FixedBytes::from_slice(&hex::decode(&ger_hex).unwrap()));
         }
     }
     println!("imported GERs: {:?}", imported_gers);

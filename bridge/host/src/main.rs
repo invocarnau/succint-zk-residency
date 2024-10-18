@@ -89,13 +89,13 @@ async fn main() -> eyre::Result<()> {
         Address::from_str(&args.contract_ger_l2).expect("Invalid address");
 
     let mut imported_gers: Vec<alloy_primitives::FixedBytes<32>> = [].to_vec();
-    if args.imported_gers_hex != "" {
+    if !args.imported_gers_hex.is_empty() {
         let imported_gers_splitted: Vec<&str> = args.imported_gers_hex.split(',').collect();
-        println!("{:?}", imported_gers_splitted);
         imported_gers = Vec::with_capacity(imported_gers_splitted.len());
         for ger_hex in imported_gers_splitted {
-            imported_gers.push(
-                alloy_primitives::FixedBytes::from_slice(&hex::decode(&ger_hex).unwrap()));
+            imported_gers.push(alloy_primitives::FixedBytes::from_slice(
+                &hex::decode(ger_hex).unwrap(),
+            ));
         }
     }
     println!("imported GERs: {:?}", imported_gers);
@@ -160,10 +160,7 @@ async fn main() -> eyre::Result<()> {
     println!("Checking injectedGERs on L2 finished");
 
     // Check that the check was successful
-    assert_eq!(
-        check_injected_gers_and_return_ler_call_output_decoded.success,
-        true
-    );
+    assert!(check_injected_gers_and_return_ler_call_output_decoded.success);
 
     // Now that we've executed all of the calls, get the `EVMStateSketch` from the host executor.
     let executor_check_injected_gers_and_return_ler_sketch =
@@ -191,7 +188,7 @@ async fn main() -> eyre::Result<()> {
         .await?;
     println!("Checking injectedGERs on L1 finished");
     // Check that the check was successful
-    assert_eq!(check_injected_gers_existance_decoded.success, true);
+    assert!(check_injected_gers_existance_decoded.success);
 
     // Now that we've executed all of the calls, get the `EVMStateSketch` from the host executor.
     let executor_check_injected_gers_existance = executor_check_gers_existance.finalize().await?;

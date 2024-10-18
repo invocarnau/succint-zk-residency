@@ -1,0 +1,21 @@
+[package]
+name = "pos-chain-proof-host"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "vkey"
+path = "src/bin/vkey.rs"
+
+[dependencies]
+polccint-lib = { path = "../../../lib" }
+
+tokio.workspace = true
+eyre.workspace = true
+dotenv.workspace = true
+clap.workspace = true
+
+sp1-sdk.workspace = true
+
+[build-dependencies]
+sp1-build = "2.0.0"

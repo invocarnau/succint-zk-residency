@@ -13,7 +13,10 @@ members = [
     "bridge/host",
     "agglayer-proof/host",
     "agglayer-proof/client",
-    # "script",
+    "pos/consensus/client", 
+    "pos/consensus/host",
+    "pos/chain-proof/client",
+    "pos/chain-proof/host",
     "op/consensus/client",
     "op/consensus/host",
     "op/chain-proof/client",
@@ -34,8 +37,13 @@ tokio = { version = "1.21", default-features = false, features = [
     "rt",
     "rt-multi-thread",
 ] }
+reqwest = { version = "0.12.7", features = ["json"] }
 hex = "0.4.3"
-
+base64 = "0.22.1"
+bytes = "1.7.1"
+prost = "0.13.1"
+prost-types = "0.13.1"
+ethers = "2.0.14"
 
 # rsp
 rsp-rpc-db = { git = "https://github.com/invocamanman/rsp" , branch = "feature/addDinamycChainIDClique"}
@@ -60,6 +68,7 @@ alloy-sol-types = { version = "0.8" }
 alloy-primitives = "0.8.0"
 alloy-sol-macro = { version = "0.8" }
 alloy = { version = "0.3" }
+alloy-rlp = "0.3.4"
 alloy-rpc-types = { version = "0.3", default-features = false, features = [
     "eth",
 ] }
@@ -77,12 +86,12 @@ reth-primitives = { git = "https://github.com/sp1-patches/reth", tag = "rsp-2024
     "alloy-compat",
     "optimism",
     "std",
+    "secp256k1"
 ] }
 
 # sp1-cc
 sp1-cc-client-executor = { git = "https://github.com/succinctlabs/sp1-contract-call/", branch = "main" }
 sp1-cc-host-executor = { git = "https://github.com/succinctlabs/sp1-contract-call/", branch = "main" }
-
 
 # sha2
 sha2 = "0.10.8"
@@ -96,4 +105,5 @@ sha3-v0-10-8 = { git = "https://github.com/sp1-patches/RustCrypto-hashes", packa
 crypto-bigint = { git = "https://github.com/sp1-patches/RustCrypto-bigint", branch = "patch-v0.5.5" }
 tiny-keccak = { git = "https://github.com/sp1-patches/tiny-keccak", branch = "patch-v2.0.2" }
 ecdsa-core = { git = "https://github.com/sp1-patches/signatures", package = "ecdsa", branch = "patch-ecdsa-v0.16.9" }
+secp256k1 = { git = "https://github.com/sp1-patches/rust-secp256k1", branch = "patch-secp256k1-v0.29.1" }
 substrate-bn = { git = "https://github.com/sp1-patches/bn", branch = "patch-v0.6.0" }

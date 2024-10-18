@@ -13,7 +13,7 @@ use std::{collections::HashMap, path::PathBuf};
 
 const FEP_CHAIN_ELF: &[u8] = include_bytes!("../../../elf/chain-proof-fep");
 const OP_CHAIN_ELF: &[u8] = include_bytes!("../../../elf/chain-proof-op"); // TODO: add correct elf
-const POS_CHAIN_ELF: &[u8] = include_bytes!("../../../elf/chain-proof-fep"); // TODO: add correct elf
+const POS_CHAIN_ELF: &[u8] = include_bytes!("../../../elf/chain-proof-pos");
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -159,13 +159,8 @@ async fn main() -> eyre::Result<()> {
         };
 
         std::fs::write(
-            fixture_path.join(
-                format!(
-                    "aggregation_for_{}.json",
-                    network_ids_string
-                )
-                .to_lowercase(),
-            ),
+            fixture_path
+                .join(format!("aggregation_for_{}.json", network_ids_string).to_lowercase()),
             serde_json::to_string_pretty(&fixture).unwrap(),
         )
         .expect("failed to write fixture");

@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+package types;
+
+message MilestoneMsg {
+    bytes proposer = 1;
+    uint64 start_block = 2;
+    uint64 end_block = 3;
+    bytes hash = 4;
+    string bor_chain_id = 5;
+    string milestone_id = 6;
+}
+
+message StdTx {
+    MilestoneMsg msg = 1;
+    bytes signature = 2;
+    string memo = 3;
+}
+
+message CanonicalPartSetHeader {
+	bytes hash = 1;
+    uint32 total = 2;
+}
+
+message CanonicalBlockId {
+    bytes hash = 1;
+    CanonicalPartSetHeader parts_header = 2;
+}
+
+message SideTxResult {
+    bytes tx_hash = 1;
+    int32 result = 2;
+    bytes sig = 3;
+}
+
+message Vote {
+    uint32 type = 1;
+    fixed64 height = 2;
+    fixed64 round = 3;
+    CanonicalBlockId block_id = 4;
+    google.protobuf.Timestamp timestamp = 5;
+    string chain_id = 6;
+    bytes data = 7;
+    SideTxResult side_tx_results = 8; 
+}
+
+message Validator {
+    uint64 id = 1;
+    uint64 start_epoch = 2;
+    uint64 end_epoch = 3;
+    uint64 nonce = 4;
+    int64 voting_power = 5;
+    bytes pub_key = 6;
+    bytes signer = 7;
+    string last_updated = 8;
+    bool jailed = 9;
+    int64 proposer_priority = 10;
+}
+
+message ValidatorSet {
+    repeated Validator validators = 1;
+    Validator proposer = 2;
+}

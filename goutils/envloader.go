@@ -31,3 +31,15 @@ func LoadRPCs(l1ChainID, l2ChainID int) (l1RPC, l2RPC *ethclient.Client, err err
 	}
 	return
 }
+
+func LoadHeimdallEndpoint() (endpoint string, err error) {
+	err = godotenv.Load("../.env")
+	if err != nil {
+		return "", fmt.Errorf("error loading .env file: %w", err)
+	}
+	endpoint = os.Getenv("HEIMDALL_REST_ENDPOINT")
+	if endpoint == "" {
+		return "", fmt.Errorf("invalid HEIMDALL_REST_ENDPOINT provided")
+	}
+	return endpoint, nil
+}

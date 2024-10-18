@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"strings"
 	"sync"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -93,29 +92,29 @@ func main() {
 	}
 }
 
-func getGers(c *cli.Context) error {
-	l1ChainID := c.Uint64(l1ChainIDFlagName)
-	l2ChainID := c.Uint64(l2ChainIDFlagName)
-	gerL2 := c.String(gerL2FlagName)
-	_, l2Rpc, err := goutils.LoadRPCs(int(l1ChainID), int(l2ChainID))
-	if err != nil {
-		return err
-	}
-	gers, err := bridge.SyncGERInjections(context.Background(), l2Rpc, common.HexToAddress(gerL2), 13296845, 13297750)
-	if err != nil {
-		return err
-	}
-	fmt.Println("gers:", gers)
-	gersStr := ""
-	for _, ger := range gers {
-		gersStr += ger.Hex() + ","
-	}
-	if len(gersStr) > 0 {
-		gersStr = strings.TrimSuffix(gersStr, ",")
-	}
-	fmt.Println("gersStr:", gersStr)
-	return nil
-}
+// func getGers(c *cli.Context) error {
+// 	l1ChainID := c.Uint64(l1ChainIDFlagName)
+// 	l2ChainID := c.Uint64(l2ChainIDFlagName)
+// 	gerL2 := c.String(gerL2FlagName)
+// 	_, l2Rpc, err := goutils.LoadRPCs(int(l1ChainID), int(l2ChainID))
+// 	if err != nil {
+// 		return err
+// 	}
+// 	gers, err := bridge.SyncGERInjections(context.Background(), l2Rpc, common.HexToAddress(gerL2), 13296845, 13297750)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	fmt.Println("gers:", gers)
+// 	gersStr := ""
+// 	for _, ger := range gers {
+// 		gersStr += ger.Hex() + ","
+// 	}
+// 	if len(gersStr) > 0 {
+// 		gersStr = strings.TrimSuffix(gersStr, ",")
+// 	}
+// 	fmt.Println("gersStr:", gersStr)
+// 	return nil
+// }
 
 func generateProof(c *cli.Context) error {
 	l1ChainID := c.Uint64(l1ChainIDFlagName)

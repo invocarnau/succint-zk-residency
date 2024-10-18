@@ -6,17 +6,20 @@
 //! ```
 
 use alloy_sol_types::{SolCall, SolType};
-use polccint_lib::pos::{ConsensusProofVerifier, PublicValuesStruct};
+use polccint_lib::pos::{ConsensusProofVerifier, PoSConsensusCommit, PublicValuesStruct};
 use pos_consensus_proof_host::{contract::ContractClient, ConsensusProver};
 use sp1_sdk::SP1ProofWithPublicValues;
+use std::path::PathBuf;
 
 #[tokio::main]
 async fn main() -> eyre::Result<()> {
     dotenv::dotenv().ok();
 
-    // Load proof from `proof.bin`
-    let proof = SP1ProofWithPublicValues::load("proof.bin").unwrap();
-    println!("Proof loaded from proof.bin");
+    let proof: SP1ProofWithPublicValues = SP1ProofWithPublicValues::load(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../proof/chain80002/consensus_block_13296845_to_13334214.bin"),
+    )
+    .expect("failed to load consensus proof");
 
     let prover = ConsensusProver::new();
     prover.verify_consensus_proof(&proof);
@@ -32,14 +35,13 @@ pub async fn send_proof_onchain(proof: SP1ProofWithPublicValues) -> eyre::Result
     // Setup the default contract client to interact with on-chain verifier
     let contract_client = ContractClient::default();
 
-    // Decode the public values from the proof
-    let vals = PublicValuesStruct::abi_decode(&proof.public_values.to_vec(), true).unwrap();
+    let consensus_commit = proof.public_values.clone().read::<PoSConsensusCommit>();
 
     // Construct the on-chain call and relay the proof to the contract.
     let call_data = ConsensusProofVerifier::verifyConsensusProofCall {
         _proofBytes: proof.bytes().into(),
-        new_bor_block_hash: vals.new_bor_block_hash,
-        l1_block_hash: vals.l1_block_hash,
+        new_bor_block_hash: consensus_commit.new_bor_hash,
+        l1_block_hash: consensus_commit.l1_block_hash,
     }
     .abi_encode();
     let result = contract_client.send(call_data).await;

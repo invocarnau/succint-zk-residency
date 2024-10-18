@@ -2,7 +2,7 @@ use alloy_primitives::{address, Address};
 
 // NETWORK IDs
 pub const FEP: u32 = 1;
-pub const OP: u32 = 70;
+pub const OP: u32 = 2;
 pub const POS: u32 = 3;
 
 /// Address of the caller.

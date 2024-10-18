@@ -11,6 +11,7 @@ import (
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/invocarnau/succint-zk-residency/goutils/contracts/gerl2"
@@ -18,22 +19,44 @@ import (
 
 var updateGEREvent = crypto.Keccak256Hash([]byte("InsertGlobalExitRoot(bytes32)"))
 
-func syncGERInjections(ctx context.Context, l2RPC *ethclient.Client, gerAddrL2 common.Address, fromBlock, toBlock uint64) ([]common.Hash, error) {
+func syncGERInjections(ctx context.Context, l2RPC *ethclient.Client, gerAddrL2 common.Address, startBlock, endBlock uint64) ([]common.Hash, error) {
 	sc, err := gerl2.NewGerl2(gerAddrL2, l2RPC)
 	if err != nil {
 		return nil, fmt.Errorf("gerl2.NewGerl2: %w", err)
 	}
-	query := ethereum.FilterQuery{
-		FromBlock: new(big.Int).SetUint64(fromBlock),
-		Addresses: []common.Address{gerAddrL2},
-		ToBlock:   new(big.Int).SetUint64(toBlock),
+
+	blockRangeSize := uint64(1000)
+	var allLogs []types.Log
+
+	for currentBlock := startBlock; currentBlock <= endBlock; currentBlock += blockRangeSize {
+		// Set the block range for the current iteration
+		fromBlock := currentBlock
+		toBlock := currentBlock + blockRangeSize - 1
+
+		// Make sure not to exceed the endBlock
+		if toBlock > endBlock {
+			toBlock = endBlock
+		}
+
+		// Define the filter query for the current block range
+		query := ethereum.FilterQuery{
+			FromBlock: new(big.Int).SetUint64(fromBlock),
+			ToBlock:   new(big.Int).SetUint64(toBlock),
+			Addresses: []common.Address{gerAddrL2},
+		}
+
+		// Fetch logs for the current block range
+		logs, err := l2RPC.FilterLogs(ctx, query)
+		if err != nil {
+			return nil, fmt.Errorf("l2RPC.FilterLogs for GER: %w", err)
+		}
+
+		// Append the logs to the result
+		allLogs = append(allLogs, logs...)
 	}
-	logs, err := l2RPC.FilterLogs(ctx, query)
-	if err != nil {
-		return nil, fmt.Errorf("l2RPC.FilterLogs for GER: %w", err)
-	}
+
 	gers := []common.Hash{}
-	for _, l := range logs {
+	for _, l := range allLogs {
 		if l.Topics[0] == updateGEREvent {
 			ger, err := sc.ParseInsertGlobalExitRoot(l)
 			if err != nil {

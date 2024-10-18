@@ -2,7 +2,7 @@
 
 The goal of this PoC is to integrate the Polygon PoS chain to agglayer.
 
-![](./proof.drawio.png)
+![](./pos-chain-proof.png)
 
 ## Proofs
 

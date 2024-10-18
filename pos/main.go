@@ -57,25 +57,25 @@ func main() {
 					Name:     milestoneIdFlagName,
 					Aliases:  []string{"id"},
 					Usage:    "Milestone ID to generate consensus proof against",
-					Required: false,
+					Required: true,
 				},
 				&cli.StringFlag{
 					Name:     milestoneHashFlagName,
 					Aliases:  []string{"hash"},
 					Usage:    "Milestone hash to generate consensus proof against",
-					Required: false,
+					Required: true,
 				},
 				&cli.Uint64Flag{
 					Name:     prevL2BlockNumFlagName,
 					Aliases:  []string{"from", "prev-block", "pb"},
 					Usage:    "Specify the previous L2 block number, from which the proof will start, this should match the new block of the last proof",
-					Required: false,
+					Required: true,
 				},
 				&cli.StringFlag{
 					Name:     gerL1FlagName,
 					Aliases:  []string{"gl1", "ger-addr-l1"},
 					Usage:    "Address of the L1 GER contract",
-					Required: false,
+					Required: true,
 				},
 				&cli.StringFlag{
 					Name:     gerL2FlagName,
@@ -142,8 +142,8 @@ func generateProof(c *cli.Context) error {
 	// Generate both proofs in parallel
 	var wg sync.WaitGroup
 	var err1, err2 bool
+	wg.Add(2)
 	go func() {
-		wg.Add(1)
 		err := generateConsensusProof(l1ChainID, milestoneId, milestoneHash, l1BlockNumber, prevL2Block, l2Block)
 		if err != nil {
 			fmt.Println("failed to generate consensus proofs:", err)
@@ -152,8 +152,7 @@ func generateProof(c *cli.Context) error {
 		wg.Done()
 	}()
 	go func() {
-		wg.Add(1)
-		err := bridge.GenerateProof(context.Background(), l2Rpc, "", l1ChainID, l2ChainID, l1BlockNumber, prevL2Block, l2Block, common.HexToAddress(gerL1), common.HexToAddress(gerL2))
+		err := bridge.GenerateProof(context.Background(), l2Rpc, "../bridge/host", l1ChainID, l2ChainID, l1BlockNumber, prevL2Block, l2Block, common.HexToAddress(gerL1), common.HexToAddress(gerL2))
 		if err != nil {
 			fmt.Println("failed to generate bridge proofs:", err)
 			err2 = true

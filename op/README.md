@@ -49,7 +49,7 @@ go run . proof \
 Make sure to replace the following:
 
 - A: Chain ID of the L1. If you want to use our testnet env, use `11155111` (Sepolia)
-- B: Chain ID of the L1. If you want to use our testnet env, use `11155420` (OP Sepolia)
+- B: Chain ID of the L2. If you want to use our testnet env, use `11155420` (OP Sepolia)
 - C: Address of the game factory proxy contract, deployed on L1. If you want to use our testnet env, use `0x05f9613adb30026ffd634f38e5c4dfd30a197fa1`
 - D: Last L2 block number that has been verified. This is intentionally non inforced, so you can choose any value greater than the block number where the L2 contracts were deployed, for instance `18699590` (recommended to use a recent but not too recent block number such as current block num - 1000, as this will incure calls on the L2 rpc)
 - E: Addrees of the Global Exit Root contract on L1. If you want to use our testnet env, use `0xe8085E052669cA2CDeCe52123A3E77461AA31494s`
